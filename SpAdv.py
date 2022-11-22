@@ -2,28 +2,25 @@ import pygame
 import random
 import os
 from sys import exit
+# from player import Player
+from bullet import Bullet, EnemyBullet
 
-# Основные параметры
 W = 480
 H = 600
 FPS = 60
 
-#Цвета
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 
-#Инициализация pygame
 pygame.init()
-pygame.mixer.init() # это для звука (на будущее)
-screen = pygame.display.set_mode((W, H)) # почему некоторые пишут screen, а некоторые surface?
-pygame.display.set_caption("Space Adventure") # лень придумывать название
+pygame.mixer.init()  # это для звука (на будущее)
+screen = pygame.display.set_mode((W, H))  # почему некоторые пишут screen, а некоторые surface?
+pygame.display.set_caption("Space Adventure")  # лень придумывать название
 clock = pygame.time.Clock()
 
-#Обработка PATH
-import os
 import sys
 
 config_name = 'myapp.cfg'
@@ -36,28 +33,22 @@ elif __file__:
 
 config_path = os.path.join(application_path, config_name)
 
-#Загрузка изображений
+# Загрузка изображений
 img_dir = os.path.join(application_path, 'img')
 background = pygame.image.load(os.path.join(img_dir, 'starfield.png'))
 background_rect = background.get_rect()
 player_img = pygame.image.load(os.path.join(img_dir, "playerShip2_green.png"))
 pygame.display.set_icon(player_img)
 
-bullet_images = {}
-bullet_images['lg'] = pygame.image.load(os.path.join(img_dir, "laserGreen10.png"))
-bullet_images['sm'] = pygame.image.load(os.path.join(img_dir, "laserGreen13.png"))
-
 meteor_images = []
-meteor_list = ['meteorBrown_big1.png','meteorBrown_med1.png',
-              'meteorBrown_med1.png','meteorBrown_med3.png',
-              'meteorBrown_small1.png','meteorBrown_small2.png',
-              'meteorBrown_tiny1.png']
+meteor_list = ['meteorBrown_big1.png', 'meteorBrown_med1.png',
+               'meteorBrown_med1.png', 'meteorBrown_med3.png',
+               'meteorBrown_small1.png', 'meteorBrown_small2.png',
+               'meteorBrown_tiny1.png']
 for img in meteor_list:
     meteor_images.append(pygame.image.load(os.path.join(img_dir, img)).convert())
 
 enemy_img = pygame.image.load(os.path.join(img_dir, "playerShip1_red.png"))
-enemy_bullet_img = pygame.image.load(os.path.join(img_dir, "laserRed06.png"))
-
 
 explosion_anim = {}
 explosion_anim['lg'] = []
@@ -80,19 +71,21 @@ heart_img = pygame.image.load(os.path.join(img_dir, 'heart.png')).convert()
 heart_mini_img = pygame.transform.scale(heart_img, (25, 25))
 heart_mini_img.set_colorkey(BLACK)
 
-powerup_images = {}
-powerup_images['shield'] = pygame.image.load(os.path.join(img_dir, 'shield_gold.png'))
-powerup_images['gun'] = pygame.image.load(os.path.join(img_dir, 'bolt_gold.png'))
+powerup_images = {
+    'shield': pygame.image.load(os.path.join(img_dir, 'shield_gold.png')),
+    'gun': pygame.image.load(os.path.join(img_dir, 'bolt_gold.png'))
+
+}
 
 volume_mixer = []
 for i in range(4):
     filename = 'volume{}.png'.format(i)
     img = pygame.image.load(os.path.join(img_dir, filename))
     img = pygame.transform.scale(img, (50, 30))
-    
+
     volume_mixer.append(img)
 
-#Загрузка звука
+# Загрузка звука
 all_sounds = set()
 snd_dir = os.path.join(application_path, 'snd')
 shoot_sound = pygame.mixer.Sound(os.path.join(snd_dir, 'pew.wav'))
@@ -112,7 +105,7 @@ all_sounds.add(shield_sound)
 all_sounds.add(power_sound)
 all_sounds.add(fart_sound)
 
-#Загрузка данных
+# Загрузка данных
 data_dir = os.path.join(application_path, 'data')
 
 sound_file = open(os.path.join(data_dir, 'sound.txt'))
@@ -128,21 +121,19 @@ highscore_file.close()
 # Пара игровых глобальных параметров
 score = 0
 
-### Инициализация классов ###
 
-#Класс игрока
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(player_img, (50, 38))
         self.rect = self.image.get_rect()
         self.radius = 20
-        #pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
-        self.rect.centerx = W / 2 # заводим центральное положение
+        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
+        self.rect.centerx = W / 2  # заводим центральное положение
         self.rect.bottom = H - 10
-        self.speedx = 0 # это типа скорость, будем её к координате прибавлять
+        self.speedx = 0  # это типа скорость, будем её к координате прибавлять
         self.shield = 100
-        
+
         self.last_shot = pygame.time.get_ticks()
         self.lives = 3
         self.hidden = False
@@ -151,7 +142,7 @@ class Player(pygame.sprite.Sprite):
         self.power_time = pygame.time.get_ticks()
         self.relax = 0
         self.alive = True
-        
+
         money_file = open(os.path.join(data_dir, 'money.txt'))
         self.money = int(money_file.read())
         money_file.close()
@@ -170,7 +161,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.speedx = 0
-        keystate = pygame.key.get_pressed() # Штука несёт зажатие каждой из клавиш
+        keystate = pygame.key.get_pressed()  # Штука несёт зажатие каждой из клавиш
         if keystate[pygame.K_LEFT]:
             self.speedx = -8
         if keystate[pygame.K_RIGHT]:
@@ -178,15 +169,15 @@ class Player(pygame.sprite.Sprite):
         if keystate[pygame.K_SPACE]:
             self.shoot()
         self.rect.x += self.speedx
-        #Спросишь, нахрен так, можно же прост координаты менять,
-        #но тут самом деле высокий замысел: при нажатии скорость изменится
-        #и станет 0 только при отпускании клавиши, чтобы можно было перемещать
-        #игрока, удерживая клавишу, уже кучу раз этот факт применяли, но я
-        #ток сейчас понял. Хотя это если без get_pressed() делать. С ним можно и так.       
+        # Спросишь, нахрен так, можно же прост координаты менять,
+        # но тут самом деле высокий замысел: при нажатии скорость изменится
+        # и станет 0 только при отпускании клавиши, чтобы можно было перемещать
+        # игрока, удерживая клавишу, уже кучу раз этот факт применяли, но я
+        # ток сейчас понял. Хотя это если без get_pressed() делать. С ним можно и так.
 
         if self.rect.right > W:
-            self.rect.right = W #Забавно, меняем только координату
-            #одной точки, но положение меняет вся фигура
+            self.rect.right = W  # Забавно, меняем только координату
+            # одной точки, но положение меняет вся фигура
         if self.rect.left < 0:
             self.rect.left = 0
 
@@ -204,7 +195,7 @@ class Player(pygame.sprite.Sprite):
             self.power_time = pygame.time.get_ticks()
         if self.power > 4:
             self.power = 4
-            
+
     def shoot(self):
         now = pygame.time.get_ticks()
         if now - self.last_shot > self.shoot_delay:
@@ -251,13 +242,14 @@ class Player(pygame.sprite.Sprite):
     def hide(self):
         self.hidden = True
         self.hide_timer = pygame.time.get_ticks()
-        self.rect.center = (W / 2, H + 200) #Телепортируем на время смерти
+        self.rect.center = (W / 2, H + 200)  # Телепортируем на время смерти
 
     def powerup(self):
         self.power += 1
         self.power_time = pygame.time.get_ticks()
-    
-#Класс метеоритов
+
+
+# Класс метеоритов
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -267,7 +259,7 @@ class Mob(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.radius = int(self.rect.width / 2.6)
         self.dif = 0
-        #pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
+        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
         self.rect.x = random.randrange(W - self.rect.width)
         self.rect.y = random.randrange(-100, -40)
         self.speedy = random.randrange(1 + self.dif, 8 + self.dif)
@@ -277,13 +269,12 @@ class Mob(pygame.sprite.Sprite):
         self.last_update = pygame.time.get_ticks()
         self.last_score = score
         self.lives = int(self.rect.width / 30 + 1)
-        
 
-    #Вращение метеоритов
+    # Вращение метеоритов
     def rotate(self):
         now = pygame.time.get_ticks()
         if now - self.last_update > 50:
-            #print("rotated")
+            # print("rotated")
             self.last_update = now
             self.rot = (self.rot + self.rot_speed) % 360
             new_image = pygame.transform.rotate(self.image_orig, self.rot)
@@ -297,7 +288,6 @@ class Mob(pygame.sprite.Sprite):
         if now - self.last_score > 500:
             self.dif += 1
             self.last_score = now
-            
 
     def update(self):
         self.rotate()
@@ -307,51 +297,14 @@ class Mob(pygame.sprite.Sprite):
 
         if (self.rect.top > H + 10 or self.rect.top < 0) and game.clear:
             self.kill()
-            
-        
-        if self.rect.top > H + 10: # Если моб уходит вниз, то тпхаем его наверх
+
+        if self.rect.top > H + 10:  # Если моб уходит вниз, то тпхаем его наверх
             self.rect.x = random.randrange(W - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1 + self.dif, 8 + self.dif)
-        
-        
 
-    
-#Класс пуль игрока
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, size):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = bullet_images[size]
-        self.rect = self.image.get_rect()
-        self.rect.bottom = y
-        self.rect.centerx = x
-        self.speedy = -10
-        
 
-    def update(self):
-        self.rect.y += self.speedy
-
-        if self.rect.bottom < 0:
-            self.kill()
-
-#Класс пуль врага
-class EnemyBullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = enemy_bullet_img
-        self.rect = self.image.get_rect()
-        self.rect.bottom = y
-        self.rect.centerx = x
-        self.speedy = 10
-        
-
-    def update(self):
-        self.rect.y += self.speedy
-
-        if self.rect.bottom > H:
-            self.kill()
-
-#Класс апгрейдов
+# Класс апгрейдов
 class Pow(pygame.sprite.Sprite):
     def __init__(self, center):
         pygame.sprite.Sprite.__init__(self)
@@ -361,15 +314,15 @@ class Pow(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = center
         self.speedy = 2
-        
 
     def update(self):
         self.rect.y += self.speedy
 
         if self.rect.top > H:
             self.kill()
-            
-#Класс врывов
+
+
+# Класс врывов
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, center, size):
         pygame.sprite.Sprite.__init__(self)
@@ -380,7 +333,7 @@ class Explosion(pygame.sprite.Sprite):
         self.frame = 0
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 50
-        
+
     def update(self):
         now = pygame.time.get_ticks()
         if now - self.last_update > self.frame_rate:
@@ -394,12 +347,13 @@ class Explosion(pygame.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.center = center
 
-#Класс игры (здесь находятся основные параметры игры, а также функции для изменения уровней)
+
+# Класс игры (здесь находятся основные параметры игры, а также функции для изменения уровней)
 class Game():
     def __init__(self):
         self.clear = False
         self.wait = False
-        
+
         self.stage = 0
         self.limit = 5000
         self.relax = 0
@@ -411,30 +365,30 @@ class Game():
         self.highscore = Highscore
         self.first_game = True
 
-
-    #Смена уровня   
+    # Смена уровня
     def boss(self):
-        if  not self.wait:
+        if not self.wait:
             game.relax = pygame.time.get_ticks()
             self.wait = True
             self.clear = True
-            #Смена музыки
+            # Смена музыки
             pygame.mixer.music.load(os.path.join(snd_dir, 'unstoppable_driver.wav'))
             pygame.mixer.music.set_volume(1)
-            pygame.mixer.music.play(loops = -1)
+            pygame.mixer.music.play(loops=-1)
 
         now = pygame.time.get_ticks()
         if now - game.relax >= 9000:
             self.wait = False
             self.clear = False
-            
+
             self.stage = 1
             self.limit = 999999
-            
+
             for i in range(20):
                 newmob()
 
-#Класс кнопок
+
+# Класс кнопок
 class Button():
     def __init__(self, surf, text, size, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -444,25 +398,25 @@ class Button():
         self.size = size
         self.text = text
         self.surf = surf
-        
+
         self.font = pygame.font.Font(font_name, self.size)
         self.text_surface = self.font.render(text, True, WHITE)
         self.rect = self.text_surface.get_rect()
 
     def update(self):
-        
+
         if self.active:
             text = '> ' + self.text + ' <'
         else:
             text = self.text
 
-        
         self.text_surface = self.font.render(text, True, WHITE)
         self.rect = self.text_surface.get_rect()
         self.rect.midtop = (self.x, self.y)
-        #self.surf.blit(self.text_surface, self.rect)
+        # self.surf.blit(self.text_surface, self.rect)
 
-#Класс врагов
+
+# Класс врагов
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -498,7 +452,8 @@ class Enemy(pygame.sprite.Sprite):
             all_sprites.add(enemy_bullet)
             enemy_bullets.add(enemy_bullet)
 
-#Это показатель громкости
+
+# Это показатель громкости
 class Mixer(pygame.sprite.Sprite):
     def __init__(self, x, y, state):
         pygame.sprite.Sprite.__init__(self)
@@ -506,7 +461,7 @@ class Mixer(pygame.sprite.Sprite):
         self.state = state
         self.image = volume_mixer[self.state]
         self.rect = self.image.get_rect()
-        
+
         self.rect.centerx = x
         self.rect.centery = y
 
@@ -514,14 +469,15 @@ class Mixer(pygame.sprite.Sprite):
         self.image = volume_mixer[self.state]
         self.image = volume_mixer[self.state]
         center = self.rect.center
-        
+
         self.rect = self.image.get_rect()
         self.rect.center = center
-        
-        
+
 
 # Функция для вывода текста (можно не париться, создавая отдельные label)
 font_name = pygame.font.match_font('droidsans')
+
+
 def draw_text(surf, text, size, x, y):
     font = pygame.font.Font(font_name, size)
     text_surface = font.render(text, True, WHITE)
@@ -529,24 +485,29 @@ def draw_text(surf, text, size, x, y):
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
 
-all_sprites = pygame.sprite.Group() # << для чего это? понятия не имею
+
+all_sprites = pygame.sprite.Group()  # << для чего это? понятия не имею
+
+
 # А всё понял, мы будем писать all_sprites.update(),
 # чтобы не обновлять каждый спрайт по отдельности, умно, умно...
 
-#Функции, создающие метеоритов и врагов
+# Функции, создающие метеоритов и врагов
 def newmob():
     m = Mob()
     all_sprites.add(m)
     mobs.add(m)
+
 
 def newenemy():
     m = Enemy()
     all_sprites.add(m)
     enemies.add(m)
 
-#Инициализируем игрока и мобов
+
+# Инициализируем игрока и мобов
 player = Player()
-game = Game() 
+game = Game()
 all_sprites.add(player)
 mobs = pygame.sprite.Group()
 
@@ -554,7 +515,7 @@ for i in range(8):
     newmob()
 
 
-#Полоса здоровья
+# Полоса здоровья
 def draw_shield_bar(surf, x, y, pct):
     if pct < 0:
         pct = 0
@@ -569,7 +530,8 @@ def draw_shield_bar(surf, x, y, pct):
     pygame.draw.rect(surf, GREEN, fill_rect)
     pygame.draw.rect(surf, WHITE, outline_rect, 2)
 
-#Полоса энергии
+
+# Полоса энергии
 def draw_energy_bar(surf, x, y, pct):
     if player.power == 1:
         pct = 100
@@ -583,7 +545,8 @@ def draw_energy_bar(surf, x, y, pct):
     pygame.draw.rect(surf, YELLOW, fill_rect)
     pygame.draw.rect(surf, WHITE, outline_rect, 2)
 
-#Прорисовка жизней
+
+# Прорисовка жизней
 def draw_lives(surf, x, y, lives, img):
     for i in range(lives):
         img_rect = img.get_rect()
@@ -591,15 +554,15 @@ def draw_lives(surf, x, y, lives, img):
         img_rect.y = y
         surf.blit(img, img_rect)
 
-#Пауза
+
+# Пауза
 def pause():
     global game_over
-    
+
     pygame.display.flip()
     play_background = pygame.display.get_surface()
     play_background_rect = play_background.get_rect()
-    
-    
+
     button1 = Button(screen, "Continue", 40, W / 2, H / 2.5 - 100)
     button2 = Button(screen, "Settings", 40, W / 2, H / 2.5)
     button3 = Button(screen, "Give up", 40, W / 2, H / 2.5 + 100)
@@ -609,18 +572,17 @@ def pause():
     waiting = True
     cnt = 0
     while waiting:
-        
+
         clock.tick(FPS)
         # Нужно зарисовывать экран картинкой со всеми игровыми элементами, но я хз как её получить
         # Пробовал через pygame.display.get_surface(), не вышло
-        screen.blit(background, background_rect) # << Проблема тут  !!!
+        screen.blit(background, background_rect)  # << Проблема тут  !!!
         draw_text(screen, "Pause", 82, W / 2, H / 20)
 
         for i in range(len(all_buttons)):
             if i != cnt:
                 all_buttons[i].active = False
-                
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -651,32 +613,29 @@ def pause():
             but.update()
             but.surf.blit(but.text_surface, but.rect)
         pygame.display.flip()
-        
 
-                    
+
 # Долгожданная менюшка             
 def menu():
-    
     button1 = Button(screen, "Play", 40, W / 2, H * 4 / 7 - 160)
     button2 = Button(screen, "Shop", 40, W / 2, H * 4 / 7 - 80)
     button3 = Button(screen, "Settings", 40, W / 2, H * 4 / 7)
     button4 = Button(screen, "Exit", 40, W / 2, H * 4 / 7 + 80)
     all_buttons = (button1, button2, button3, button4)
-    
-        
+
     waiting = True
     cnt = 0
     while waiting:
         clock.tick(FPS)
-        
+
         screen.blit(background, background_rect)
         draw_text(screen, "Space Adventure", 64, W / 2, H / 10)
         draw_text(screen, "Your highscore >> " + str(game.highscore), 28, W / 2, H - 50)
-        
+
         for i in range(len(all_buttons)):
             if i != cnt:
                 all_buttons[i].active = False
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -697,16 +656,15 @@ def menu():
                         pygame.quit()
                         exit()
 
-                
-                    
         all_buttons[cnt].active = True
         for but in all_buttons:
             but.update()
             but.surf.blit(but.text_surface, but.rect)
         pygame.display.flip()
-        #print(button1.active, button2.active, button3.active)
+        # print(button1.active, button2.active, button3.active)
 
-#Настройки
+
+# Настройки
 
 def show_settings():
     button1 = Button(screen, "Sound", 40, W / 2, H / 2 - 100)
@@ -723,19 +681,19 @@ def show_settings():
     mixers = pygame.sprite.Group()
     mixers.add(mixer1)
     mixers.add(mixer2)
-    
+
     waiting = True
     cnt = 0
     while waiting:
         clock.tick(FPS)
-        
+
         screen.blit(background, background_rect)
         draw_text(screen, "Settings", 64, W / 2, H / 10)
-        
+
         for i in range(len(all_buttons)):
             if i != cnt:
                 all_buttons[i].active = False
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -766,8 +724,7 @@ def show_settings():
                         state2 -= 1
                         if state2 < 0:
                             state2 = 0
-                        
-                        
+
         all_buttons[cnt].active = True
         for but in all_buttons:
             but.update()
@@ -778,24 +735,24 @@ def show_settings():
         game.sound_state = state1
         game.music_state = state2
 
-        #Загрузка данных в файл для сохранения
+        # Загрузка данных в файл для сохранения
         sound_file = open(os.path.join(data_dir, 'sound.txt'), 'w')
         sound_file.write('Sound_state {}\n'.format(state1))
         sound_file.write('Music_state {}\n'.format(state2))
         Sound_state = All_sound_state[0].split()[1]
         Music_state = All_sound_state[1].split()[1]
         sound_file.close()
-        
-        
+
         for snd in all_sounds:
             snd.set_volume(state1 / 3)
         pygame.mixer.music.set_volume(state2 / 3)
-        
+
         for m in all_mixers:
             m.update()
         mixers.draw(screen)
-        
+
         pygame.display.flip()
+
 
 def show_shop():
     MAX = 3
@@ -805,20 +762,18 @@ def show_shop():
             Upgrade_Levels.append('MAX')
         else:
             Upgrade_Levels.append(str(i))
-    
+
     button1 = Button(screen, "Power lvl " + Upgrade_Levels[0], 30, W / 2, H / 2.3 - 100)
-    button2 = Button(screen, "Shield lvl " + Upgrade_Levels[1], 30, W / 2 , H / 2.3)
+    button2 = Button(screen, "Shield lvl " + Upgrade_Levels[1], 30, W / 2, H / 2.3)
     button3 = Button(screen, "Atk Speed lvl " + Upgrade_Levels[2], 30, W / 2, H / 2.3 + 100)
     button4 = Button(screen, "Back", 30, W / 2, H / 2.3 + 200)
     all_buttons = (button1, button2, button3, button4)
-    
-    
 
     waiting = True
     cnt = 0
     while waiting:
         clock.tick(FPS)
-        
+
         screen.blit(background, background_rect)
         draw_text(screen, "Shop", 64, W / 2, H / 10)
         draw_text(screen, "Your money >> " + str(player.money), 28, W / 2, H - 50)
@@ -831,13 +786,11 @@ def show_shop():
         power_cost = 50 * player.Power_lvl
         shield_cost = 50 * player.Shield_lvl
         atkspeed_cost = 50 * player.Atkspeed_lvl
-        
-        
-        
+
         for i in range(len(all_buttons)):
             if i != cnt:
                 all_buttons[i].active = False
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -884,8 +837,6 @@ def show_shop():
                     stats_file.write('Shield_lvl {}\n'.format(player.Shield_lvl))
                     stats_file.write('Atk_speed_lvl {}\n'.format(player.Atkspeed_lvl))
                     stats_file.close()
-                    
-        
 
         if cnt == 0:
             draw_text(screen, "Increases starting", 30, W / 2 + 100, H / 2.3 - 50)
@@ -919,10 +870,9 @@ def show_shop():
             but.update()
             but.rect.left = 20
             but.surf.blit(but.text_surface, but.rect)
-            
-        
+
         pygame.display.flip()
-        #print(button1.active, button2.active, button3.active)
+        # print(button1.active, button2.active, button3.active)
 
 
 def game_over_screen(scor):
@@ -930,28 +880,28 @@ def game_over_screen(scor):
     button2 = Button(screen, "Back to menu", 40, W / 2, H / 2)
     button3 = Button(screen, "Exit", 40, W / 2, H / 2 + 100)
     all_buttons = (button1, button2, button3)
-    
-    added_money = int(((scor // 500)**(4/3))//2)
+
+    added_money = int(((scor // 500) ** (4 / 3)) // 2)
     player.money += added_money
 
     money_file = open(os.path.join(data_dir, 'money.txt'), 'w')
     money_file.write(str(player.money))
     money_file.close()
-    
+
     waiting = True
     cnt = 0
     while waiting:
         clock.tick(FPS)
-        
+
         screen.blit(background, background_rect)
         draw_text(screen, "Game Over", 64, W / 2, H / 10)
         draw_text(screen, "You got {} money!".format(added_money), 30, W / 2, H / 10 + 80)
         draw_text(screen, "Your score >> " + str(scor), 28, W / 2, H - 50)
-        
+
         for i in range(len(all_buttons)):
             if i != cnt:
                 all_buttons[i].active = False
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -973,19 +923,18 @@ def game_over_screen(scor):
                         pygame.quit()
                         exit()
 
-                
-                    
         all_buttons[cnt].active = True
         for but in all_buttons:
             but.update()
             but.surf.blit(but.text_surface, but.rect)
         pygame.display.flip()
-        #print(button1.active, button2.active, button3.active)
-                        
-#Добавление основных групп
+        # print(button1.active, button2.active, button3.active)
+
+
+# Добавление основных групп
 powerups = pygame.sprite.Group()
 
-#Процесс игры
+# Процесс игры
 
 
 game_over = True
@@ -994,7 +943,7 @@ while running:
     if game_over:
         pygame.mixer.music.load(os.path.join(snd_dir, 'Wonderful.mp3'))
         pygame.mixer.music.set_volume(1)
-        pygame.mixer.music.play(loops = -1)
+        pygame.mixer.music.play(loops=-1)
 
         for snd in all_sounds:
             snd.set_volume(Sound_state / 3)
@@ -1004,35 +953,33 @@ while running:
             game_over_screen(score)
         else:
             menu()
-        
+
         game_over = False
         game.first_game = False
         all_sprites = pygame.sprite.Group()
-        
+
         mobs = pygame.sprite.Group()
         enemies = pygame.sprite.Group()
-        
+
         bullets = pygame.sprite.Group()
         enemy_bullets = pygame.sprite.Group()
         player = Player()
         all_sprites.add(player)
-        
+
         game.stage = 0
         game.limit = 5000
         game.spawn_rate = 15000
-        
+
         for i in range(8):
             newmob()
-            
+
         score = 0
     clock.tick(FPS)
 
-    
-    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pause()
@@ -1040,7 +987,7 @@ while running:
         if event.type == pygame.KEYUP:
             pass
 
-    all_sprites.update() # << великая вещь
+    all_sprites.update()  # << великая вещь
 
     if score >= game.limit and game.stage == 0:
         game.boss()
@@ -1051,7 +998,7 @@ while running:
         game.spawn_rate *= 0.9
         newenemy()
 
-    #Проверка коллайда "игрок - моб"
+    # Проверка коллайда "игрок - моб"
     hits = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
     for hit in hits:
         player.shield -= hit.radius * 2
@@ -1069,7 +1016,7 @@ while running:
             player.alive = False
             player.shield = 0
 
-    #Обработка апгрейдов
+    # Обработка апгрейдов
     hits = pygame.sprite.spritecollide(player, powerups, True)
     for hit in hits:
         if hit.type == 'shield':
@@ -1080,20 +1027,19 @@ while running:
         if hit.type == 'gun':
             player.powerup()
             power_sound.play()
-            
 
-    #Проверка смерти игрока и анимации его смерти
+    # Проверка смерти игрока и анимации его смерти
     if not player.alive and not death_explosion.alive():
 
         if score > game.highscore:
             game.highscore = score
-            highscore_file = open(os.path.join(data_dir, 'highscore.txt'),'w')
+            highscore_file = open(os.path.join(data_dir, 'highscore.txt'), 'w')
             highscore_file.write(str(score))
             highscore_file.close()
-        
+
         game_over = True
 
-    #Проверка коллайда "моб - пуля"
+    # Проверка коллайда "моб - пуля"
     hits = pygame.sprite.groupcollide(mobs, bullets, False, True)
     for hit in hits:
         hit.lives -= 1
@@ -1104,7 +1050,7 @@ while running:
             all_sprites.add(expl)
         else:
             hit.kill()
-            score += 50 + hit.radius # Очки считаются от радиуса
+            score += 50 + hit.radius  # Очки считаются от радиуса
             random.choice(expl_sounds).play()
             expl = Explosion(hit.rect.center, 'lg')
             all_sprites.add(expl)
@@ -1114,7 +1060,7 @@ while running:
                 powerups.add(pov)
             newmob()
 
-    #Проверка коллайда "игрок - вражеская пуля"
+    # Проверка коллайда "игрок - вражеская пуля"
     hits = pygame.sprite.spritecollide(player, enemy_bullets, True)
     for hit in hits:
         player.shield -= 50
@@ -1131,7 +1077,7 @@ while running:
         if player.lives == 0:
             player.alive = False
 
-    #Проверка коллайда "пуля - враг"
+    # Проверка коллайда "пуля - враг"
     hits = pygame.sprite.groupcollide(enemies, bullets, False, True)
     for hit in hits:
         hit.lives -= 1
@@ -1150,7 +1096,7 @@ while running:
                 pov = Pow(hit.rect.center)
                 all_sprites.add(pov)
                 powerups.add(pov)
-    
+
     if player.power >= 4:
         pow_lev = 'MAX'
     else:
@@ -1160,22 +1106,13 @@ while running:
     screen.blit(background, background_rect)
     all_sprites.draw(screen)
     draw_text(screen, str(score), 22, W / 2, 10)
-    draw_text(screen,'Power Lvl ' + str(pow_lev), 23, W - 60, 30)
+    draw_text(screen, 'Power Lvl ' + str(pow_lev), 23, W - 60, 30)
     draw_shield_bar(screen, 5, 5, player.shield)
     draw_energy_bar(screen, W - 110, 5, (now - player.power_time) // 100)
     draw_lives(screen, 12, 25, player.lives, heart_mini_img)
-    
+
     # А вот чем отличется display.update() от этого?
     pygame.display.flip()
 
-pygame.quit() # У меня когда-то эта штука стояла в строке после running = False
+pygame.quit()  # У меня когда-то эта штука стояла в строке после running = False
 # и я удивлялся, что игра не закрывается
-
-
-
-
-
-    
-
-    
-
