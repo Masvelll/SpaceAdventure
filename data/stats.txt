@@ -1,0 +1,3 @@
+Power_lvl 3
+Shield_lvl 3
+Atk_speed_lvl 3
