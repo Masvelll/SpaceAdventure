@@ -1,0 +1,65 @@
+@startuml
+class Player {
+  position
+  state
+  health
+  update()
+  shoot()
+  powerup()
+  hide()
+}
+class Bullet {
+  position
+  speed
+  update()
+}
+Class Enemy {
+  position
+  state
+  update()
+  shoot()
+}
+Class EnemyBullet{
+  position
+  speed
+  update()
+}
+Class Mob {
+  position
+  rotation
+  difficulty
+  rotate()
+  dif_increase()
+}
+Class Game {
+  stage
+  spawn_rate
+  highsccore
+  next_stage()
+
+}
+Class Mixer{
+  state
+  update()
+  
+}
+Class Pow {
+  type
+  position
+  speed
+  update()
+}
+Class Button {
+  active
+  font
+  text
+  update()
+}
+Class Menu
+Player --> Pow
+Player --> Bullet
+Enemy --> EnemyBullet
+Game --> Mixer
+Game --> Enemy
+Game --> Mob
+@enduml
