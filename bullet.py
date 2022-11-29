@@ -1,7 +1,7 @@
 import pygame
 import os
 import sys
-from settings import H
+from settings import HEIGHT
 
 config_name = 'myapp.cfg'
 
@@ -13,13 +13,13 @@ elif __file__:
 
 config_path = os.path.join(application_path, config_name)
 
-img_dir = os.path.join(application_path, 'img')
+IMG_DIR = os.path.join(application_path, 'img')
 bullet_images = {
-    'lg': pygame.image.load(os.path.join(img_dir, "laserGreen10.png")),
-    'sm': pygame.image.load(os.path.join(img_dir, "laserGreen13.png"))
+    'lg': pygame.image.load(os.path.join(IMG_DIR, "laserGreen10.png")),
+    'sm': pygame.image.load(os.path.join(IMG_DIR, "laserGreen13.png"))
 }
 
-enemy_bullet_img = pygame.image.load(os.path.join(img_dir, "laserRed06.png"))
+enemy_bullet_img = pygame.image.load(os.path.join(IMG_DIR, "laserRed06.png"))
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -51,5 +51,5 @@ class EnemyBullet(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.speedy
 
-        if self.rect.bottom > H:
+        if self.rect.bottom > HEIGHT:
             self.kill()
