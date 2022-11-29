@@ -1,23 +1,19 @@
 import pygame
 import os
-from settings import H, W
+from settings import H, W, data_dir, img_dir
 from bullet import Bullet, EnemyBullet
 import sys
 
 config_name = 'myapp.cfg'
-if getattr(sys, 'frozen', False):
-    application_path = os.path.dirname(sys.executable)
-elif __file__:
-    application_path = os.path.dirname(__file__)
-
+application_path = os.path.dirname(sys.executable)
 config_path = os.path.join(application_path, config_name)
 
-img_dir = os.path.join(application_path, 'img')
-player_img = pygame.image.load(os.path.join(img_dir, "playerShip2_green.png"))
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+        player_img = pygame.image.load(os.path.join(img_dir, "playerShip2_green.png"))
         self.image = pygame.transform.scale(player_img, (50, 38))
         self.rect = self.image.get_rect()
         self.radius = 20
