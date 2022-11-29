@@ -4,6 +4,7 @@ import os
 from sys import exit
 # from player import Player
 from bullet import Bullet, EnemyBullet
+import sys
 
 W = 480
 H = 600
@@ -21,7 +22,7 @@ screen = pygame.display.set_mode((W, H))  # почему некоторые пи
 pygame.display.set_caption("Space Adventure")  # лень придумывать название
 clock = pygame.time.Clock()
 
-import sys
+
 
 config_name = 'myapp.cfg'
 
