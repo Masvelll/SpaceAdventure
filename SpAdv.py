@@ -13,22 +13,22 @@ import logging
 from logging import config
 
 log_config = {
-    "version":1,
-    "root":{
-        "handlers" : ["console"],
+    "version": 1,
+    "root": {
+        "handlers": ["console"],
         "level": "INFO"
     },
-    "handlers":{
-        "console":{
+    "handlers": {
+        "console": {
             "formatter": "std_out",
             "class": "logging.StreamHandler",
             "level": "DEBUG"
         }
     },
-    "formatters":{
+    "formatters": {
         "std_out": {
             "format": "%(asctime)s : %(levelname)s : %(module)s : %(funcName)s : %(lineno)d : %(message)s",
-            "datefmt":"%d-%m-%Y %I:%M:%S"
+            "datefmt": "%d-%m-%Y %I:%M:%S"
         }
     },
 }
@@ -43,7 +43,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))  # почему некотор
 pygame.display.set_caption("Space Adventure")  # лень придумывать название
 clock = pygame.time.Clock()
 
-
 volume_mixer = []
 for i in range(4):
     filename = 'volume{}.png'.format(i)
@@ -51,7 +50,6 @@ for i in range(4):
     img = pygame.transform.scale(img, (50, 30))
 
     volume_mixer.append(img)
-
 
 # Пара игровых глобальных параметров
 score = 0
@@ -199,11 +197,9 @@ def draw_text(surf, text, size, x, y):
     surf.blit(text_surface, text_rect)
 
 
-
-
 def newenemy():
     m = Enemy()
-    #all_sprites.add(m)
+    # all_sprites.add(m)
     game.enemies.add(m)
 
 
@@ -214,6 +210,7 @@ game = Game(music_manager)
 
 spawn_manager = SpawnManager(game)
 mobs = pygame.sprite.Group()
+player = Player(game.all_sprites, game.bullets, music_manager)
 
 for i in range(8):
     spawn_manager.newmob(game)
@@ -440,11 +437,11 @@ def show_settings():
         game.music_state = state2
 
         # Загрузка данных в файл для сохранения
-        sound_file = open(os.path.join(DATA_DIR, 'sound.txt'), 'WIDTH')
+        sound_file = open(os.path.join(DATA_DIR, 'sound.txt'), 'w')
         sound_file.write('Sound_state {}\n'.format(state1))
         sound_file.write('Music_state {}\n'.format(state2))
-        #Sound_state = All_sound_state[0].split()[1]
-        #Music_state = All_sound_state[1].split()[1]
+        # Sound_state = All_sound_state[0].split()[1]
+        # Music_state = All_sound_state[1].split()[1]
         sound_file.close()
 
         for snd in music_manager.all_sounds:
@@ -619,7 +616,7 @@ def game_over_screen(scor):
                     if cnt == 0:
                         waiting = False
                     if cnt == 1:
-                        menu()
+                        menu(player)
                         screen.blit(background, background_rect)
                         pygame.display.flip()
                         waiting = False
@@ -658,14 +655,14 @@ while running:
 
         game_over = False
         game.first_game = False
-        #all_sprites = pygame.sprite.Group()
+        # all_sprites = pygame.sprite.Group()
 
-        #mobs = pygame.sprite.Group()
-        #enemies = pygame.sprite.Group()
+        # mobs = pygame.sprite.Group()
+        # enemies = pygame.sprite.Group()
 
-        #bullets = pygame.sprite.Group()
-        #enemy_bullets = pygame.sprite.Group()
-        player = Player(game.all_sprites, game.bullets, music_manager)
+        # bullets = pygame.sprite.Group()
+        # enemy_bullets = pygame.sprite.Group()
+
         game.all_sprites.add(player)
 
         game.stage = 0
@@ -743,7 +740,7 @@ while running:
 
     # Проверка коллайда "моб - пуля"
     hits = pygame.sprite.groupcollide(game.mobs, game.bullets, False, True)
-    #logger.debug(hits)
+    # logger.debug(hits)
     for hit in hits:
         hit.lives -= 1
         if hit.lives > 0:
