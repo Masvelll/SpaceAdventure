@@ -3,7 +3,7 @@ from settings import music_state, sound_state, highscore
 from player import Player
 
 
-class Game():
+class Game:
     """Класс, объект которого содержит все основные параметры игры"""
 
     def __init__(self, music_manager):

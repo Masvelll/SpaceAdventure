@@ -3,6 +3,7 @@ from music_manager import MusicManager
 from mob import Mob
 from enemy import Enemy
 
+
 class SpawnManager:
     def __init__(self, game):
         self.game = game

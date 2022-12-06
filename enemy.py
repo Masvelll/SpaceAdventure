@@ -4,6 +4,7 @@ from bullet import EnemyBullet
 from images import enemy_img
 from settings import WIDTH
 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, all_sprites, enemy_bullets):
         pygame.sprite.Sprite.__init__(self)

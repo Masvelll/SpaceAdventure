@@ -5,6 +5,7 @@ from images import meteor_images
 
 
 class Mob(pygame.sprite.Sprite):
+    """Класс метеоритов"""
     def __init__(self, is_stop):
         pygame.sprite.Sprite.__init__(self)
         self.image_orig = random.choice(meteor_images)
@@ -26,6 +27,7 @@ class Mob(pygame.sprite.Sprite):
 
     # Вращение метеоритов
     def rotate(self):
+        """Вращает метеорит"""
         now = pygame.time.get_ticks()
         if now - self.last_update > 50:
             # print("rotated")
@@ -37,10 +39,8 @@ class Mob(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.center = old_center
 
-
     def update(self):
         self.rotate()
-        #self.dif_increase()
         self.rect.y += self.speedy
         self.rect.x += self.speedx
 

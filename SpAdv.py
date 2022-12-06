@@ -2,11 +2,10 @@ import pygame
 import random
 import os
 from player import Player
-from enemy import Enemy
-#from bullet import Bullet, EnemyBullet
+from rendering import draw_text, draw_shield_bar, draw_energy_bar, draw_lives
 from game import Game
-from settings import DATA_DIR, sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, RED, GREEN, YELLOW, IMG_DIR
-from images import explosion_anim, enemy_img, background_rect, background, powerup_images, heart_mini_img
+from settings import DATA_DIR, sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, IMG_DIR
+from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
 from spawn_manager import SpawnManager
 import logging
@@ -152,15 +151,6 @@ class Mixer(pygame.sprite.Sprite):
 # Функция для вывода текста (можно не париться, создавая отдельные label)
 font_name = pygame.font.match_font('droidsans')
 
-
-def draw_text(surf, text, size, x, y):
-    font = pygame.font.Font(font_name, size)
-    text_surface = font.render(text, True, WHITE)
-    text_rect = text_surface.get_rect()
-    text_rect.midtop = (x, y)
-    surf.blit(text_surface, text_rect)
-
-
 # Инициализируем игрока и мобов
 
 music_manager = MusicManager()
@@ -172,46 +162,6 @@ player = Player(game.all_sprites, game.bullets, music_manager)
 
 for i in range(8):
     spawn_manager.newmob(game)
-
-
-# Полоса здоровья
-def draw_shield_bar(surf, x, y, pct):
-    if pct < 0:
-        pct = 0
-    BAR_LENGTH = 100 * (1 + player.Shield_lvl / 3)
-    BAR_HEIGHT = 10
-    fill = (pct / (100 * (1 + player.Shield_lvl / 3))) * BAR_LENGTH
-    fill2 = BAR_LENGTH - fill
-    outline_rect = pygame.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
-    fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
-    fill2_rect = pygame.Rect(x + fill, y, fill2, BAR_HEIGHT)
-    pygame.draw.rect(surf, RED, fill2_rect)
-    pygame.draw.rect(surf, GREEN, fill_rect)
-    pygame.draw.rect(surf, WHITE, outline_rect, 2)
-
-
-# Полоса энергии
-def draw_energy_bar(surf, x, y, pct):
-    if player.power == 1:
-        pct = 100
-    if pct < 0:
-        pct = 0
-    BAR_LENGTH = 100
-    BAR_HEIGHT = 10
-    fill = (1 - pct / 100) * BAR_LENGTH
-    outline_rect = pygame.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
-    fill_rect = pygame.Rect(x, y, fill, BAR_HEIGHT)
-    pygame.draw.rect(surf, YELLOW, fill_rect)
-    pygame.draw.rect(surf, WHITE, outline_rect, 2)
-
-
-# Прорисовка жизней
-def draw_lives(surf, x, y, lives, img):
-    for i in range(lives):
-        img_rect = img.get_rect()
-        img_rect.x = x + 30 * i
-        img_rect.y = y
-        surf.blit(img, img_rect)
 
 
 # Пауза
@@ -764,8 +714,8 @@ while running:
     game.all_sprites.draw(screen)
     draw_text(screen, str(score), 22, WIDTH / 2, 10)
     draw_text(screen, 'Power Lvl ' + str(pow_lev), 23, WIDTH - 60, 30)
-    draw_shield_bar(screen, 5, 5, player.shield)
-    draw_energy_bar(screen, WIDTH - 110, 5, (now - player.power_time) // 100)
+    draw_shield_bar(screen, 5, 5, player.shield, player)
+    draw_energy_bar(screen, WIDTH - 110, 5, (now - player.power_time) // 100, player.power)
     draw_lives(screen, 12, 25, player.lives, heart_mini_img)
     pygame.display.flip()
 

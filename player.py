@@ -1,7 +1,7 @@
 import pygame
 import os
 from settings import HEIGHT, WIDTH, DATA_DIR, IMG_DIR
-from bullet import Bullet, EnemyBullet
+from bullet import Bullet
 import sys
 
 config_name = 'myapp.cfg'
@@ -72,11 +72,11 @@ class Player(pygame.sprite.Sprite):
             self.rect.centerx = WIDTH / 2
             self.rect.bottom = HEIGHT - 10
 
-        POWERUP_TIME = 10000
-        if self.power == 2 and pygame.time.get_ticks() - self.power_time > POWERUP_TIME:
+        powerup_time = 10000
+        if self.power == 2 and pygame.time.get_ticks() - self.power_time > powerup_time:
             self.power -= 1
             self.power_time = pygame.time.get_ticks()
-        if self.power >= 3 and pygame.time.get_ticks() - self.power_time > POWERUP_TIME:
+        if self.power >= 3 and pygame.time.get_ticks() - self.power_time > powerup_time:
             self.power -= 1
             self.power_time = pygame.time.get_ticks()
         if self.power > 4:
