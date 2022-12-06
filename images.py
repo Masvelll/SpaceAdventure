@@ -48,3 +48,10 @@ powerup_images = {
     'gun': pygame.image.load(os.path.join(IMG_DIR, 'bolt_gold.png'))
 
 }
+
+bullet_images = {
+    'lg': pygame.image.load(os.path.join(IMG_DIR, "laserGreen10.png")),
+    'sm': pygame.image.load(os.path.join(IMG_DIR, "laserGreen13.png"))
+}
+
+enemy_bullet_img = pygame.image.load(os.path.join(IMG_DIR, "laserRed06.png"))

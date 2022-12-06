@@ -1,26 +1,7 @@
 import pygame
 import os
-import sys
+from images import enemy_bullet_img, bullet_images
 from settings import HEIGHT
-
-config_name = 'myapp.cfg'
-
-# determine if application is a script file or frozen exe
-if getattr(sys, 'frozen', False):
-    application_path = os.path.dirname(sys.executable)
-elif __file__:
-    application_path = os.path.dirname(__file__)
-
-config_path = os.path.join(application_path, config_name)
-
-IMG_DIR = os.path.join(application_path, 'img')
-bullet_images = {
-    'lg': pygame.image.load(os.path.join(IMG_DIR, "laserGreen10.png")),
-    'sm': pygame.image.load(os.path.join(IMG_DIR, "laserGreen13.png"))
-}
-
-enemy_bullet_img = pygame.image.load(os.path.join(IMG_DIR, "laserRed06.png"))
-
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, size):

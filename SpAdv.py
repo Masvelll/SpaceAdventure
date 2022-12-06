@@ -2,7 +2,8 @@ import pygame
 import random
 import os
 from player import Player
-from bullet import Bullet, EnemyBullet
+from enemy import Enemy
+#from bullet import Bullet, EnemyBullet
 from game import Game
 from settings import DATA_DIR, sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, RED, GREEN, YELLOW, IMG_DIR
 from images import explosion_anim, enemy_img, background_rect, background, powerup_images, heart_mini_img
@@ -127,43 +128,6 @@ class Button():
         # self.surf.blit(self.text_surface, self.rect)
 
 
-# Класс врагов
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = enemy_img
-        self.image = pygame.transform.scale(self.image, (50, 38))
-        self.rect = self.image.get_rect()
-        self.radius = 20
-
-        self.rect.x = random.randrange(WIDTH - self.rect.width)
-        self.rect.y = random.randrange(-100, -40)
-        self.speedy = random.randrange(1, 8)
-        self.speedx = random.randrange(2, 4)
-
-        self.shoot_delay = 400
-        self.last_shot = pygame.time.get_ticks()
-        self.lives = 10
-
-    def update(self):
-        self.shoot()
-        self.rect.x += self.speedx
-        self.rect.y += self.speedy
-
-        if self.rect.top >= 10:
-            self.speedy = 0
-        if self.rect.right > WIDTH or self.rect.left < 0:
-            self.speedx *= -1
-
-    def shoot(self):
-        now = pygame.time.get_ticks()
-        if now - self.last_shot > self.shoot_delay:
-            self.last_shot = now
-            enemy_bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
-            game.all_sprites.add(enemy_bullet)
-            game.enemy_bullets.add(enemy_bullet)
-
-
 # Это показатель громкости
 class Mixer(pygame.sprite.Sprite):
     def __init__(self, x, y, state):
@@ -195,12 +159,6 @@ def draw_text(surf, text, size, x, y):
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
-
-
-def newenemy():
-    m = Enemy()
-    # all_sprites.add(m)
-    game.enemies.add(m)
 
 
 # Инициализируем игрока и мобов
@@ -689,13 +647,13 @@ while running:
     game.all_sprites.update()
 
     if score >= game.limit and game.stage == 0:
-        game.next_level()
+        game.next_level(music_manager, spawn_manager)
 
     now = pygame.time.get_ticks()
     if now - game.last_spawn > game.spawn_rate and game.stage == 1:
         game.last_spawn = now
         game.spawn_rate *= 0.9
-        newenemy()
+        spawn_manager.spawn_enemy(game)
 
     # Проверка коллайда "игрок - моб"
     hits = pygame.sprite.spritecollide(player, game.mobs, True, pygame.sprite.collide_circle)
@@ -732,7 +690,7 @@ while running:
 
         if score > game.highscore:
             game.highscore = score
-            highscore_file = open(os.path.join(DATA_DIR, 'highscore.txt'), 'WIDTH')
+            highscore_file = open(os.path.join(DATA_DIR, 'highscore.txt'), 'w')
             highscore_file.write(str(score))
             highscore_file.close()
 
