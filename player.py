@@ -9,9 +9,8 @@ application_path = os.path.dirname(sys.executable)
 config_path = os.path.join(application_path, config_name)
 
 
-
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, all_sprites, bullets, music_manager):
         pygame.sprite.Sprite.__init__(self)
         player_img = pygame.image.load(os.path.join(IMG_DIR, "playerShip2_green.png"))
         self.image = pygame.transform.scale(player_img, (50, 38))
@@ -48,6 +47,10 @@ class Player(pygame.sprite.Sprite):
         self.power = self.Power_lvl
         self.shoot_delay = 250 * (1 - (self.Atkspeed_lvl - 1) / 5)
 
+        self.bullets = bullets
+        self.music_manager = music_manager
+        self.all_sprites = all_sprites
+
     def update(self):
         self.speedx = 0
         keystate = pygame.key.get_pressed()  # Штука несёт зажатие каждой из клавиш
@@ -79,48 +82,48 @@ class Player(pygame.sprite.Sprite):
         if self.power > 4:
             self.power = 4
 
-    def shoot(self, game, music_manager):
+    def shoot(self):
         now = pygame.time.get_ticks()
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             if self.power == 1:
                 bullet = Bullet(self.rect.centerx, self.rect.top, 'lg')
-                game.all_sprites.add(bullet)
-                game.bullets.add(bullet)
-                music_manager.shoot_sound.play()
+                self.all_sprites.add(bullet)
+                self.bullets.add(bullet)
+                self.music_manager.shoot_sound.play()
             if self.power == 2:
                 bullet1 = Bullet(self.rect.left, self.rect.centery, 'lg')
                 bullet2 = Bullet(self.rect.right, self.rect.centery, 'lg')
-                game.all_sprites.add(bullet1)
-                game.all_sprites.add(bullet2)
-                game.bullets.add(bullet1)
-                game.bullets.add(bullet2)
-                music_manager.shoot_sound.play()
+                self.all_sprites.add(bullet1)
+                self.all_sprites.add(bullet2)
+                self.bullets.add(bullet1)
+                self.bullets.add(bullet2)
+                self.music_manager.shoot_sound.play()
             if self.power == 3:
                 bullet1 = Bullet(self.rect.centerx, self.rect.top, 'lg')
                 bullet2 = Bullet(self.rect.right, self.rect.centery, 'sm')
                 bullet3 = Bullet(self.rect.left, self.rect.centery, 'sm')
-                game.all_sprites.add(bullet1)
-                game.all_sprites.add(bullet2)
-                game.all_sprites.add(bullet3)
-                game.bullets.add(bullet1)
-                game.bullets.add(bullet2)
-                game.bullets.add(bullet3)
-                music_manager.shoot_sound.play()
+                self.all_sprites.add(bullet1)
+                self.all_sprites.add(bullet2)
+                self.all_sprites.add(bullet3)
+                self.bullets.add(bullet1)
+                self.bullets.add(bullet2)
+                self.bullets.add(bullet3)
+                self.music_manager.shoot_sound.play()
             if self.power >= 4:
                 bullet1 = Bullet(self.rect.right + 5, self.rect.centery, 'sm')
                 bullet2 = Bullet(self.rect.left - 5, self.rect.centery, 'sm')
                 bullet3 = Bullet(self.rect.right - 10, self.rect.top, 'lg')
                 bullet4 = Bullet(self.rect.left + 10, self.rect.top, 'lg')
-                game.all_sprites.add(bullet1)
-                game.all_sprites.add(bullet2)
-                game.all_sprites.add(bullet3)
-                game.all_sprites.add(bullet4)
-                game.bullets.add(bullet1)
-                game.bullets.add(bullet2)
-                game.bullets.add(bullet3)
-                game.bullets.add(bullet4)
-                music_manager.shoot_sound.play()
+                self.all_sprites.add(bullet1)
+                self.all_sprites.add(bullet2)
+                self.all_sprites.add(bullet3)
+                self.all_sprites.add(bullet4)
+                self.bullets.add(bullet1)
+                self.bullets.add(bullet2)
+                self.bullets.add(bullet3)
+                self.bullets.add(bullet4)
+                self.music_manager.shoot_sound.play()
 
     def hide(self):
         self.hidden = True

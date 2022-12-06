@@ -2,9 +2,11 @@ import pygame
 from settings import music_state, sound_state, highscore
 from player import Player
 
+
 class Game():
     """Класс, объект которого содержит все основные параметры игры"""
-    def __init__(self):
+
+    def __init__(self, music_manager):
         self.clear = False
         self.wait = False
 
@@ -18,19 +20,20 @@ class Game():
         self.sound_state = sound_state
         self.highscore = highscore
         self.first_game = True
+        self.music_manager = music_manager
 
         self.all_sprites = pygame.sprite.Group()
         self.mobs = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
-        self.player = Player()
 
     def entity_spawn(self):
         """Добавляет все группы спрайтов в all_sprites"""
 
         self.all_sprites.add(self.player)
 
-    def next_level(self, music_manager):
+    def next_level(self, music_manager, spawn_manager):
         """Переходит в усложнённый режим игры"""
         if not self.wait:
             self.relax = pygame.time.get_ticks()
@@ -47,4 +50,4 @@ class Game():
             self.limit = 999999
 
             for i in range(20):
-                self.newmob()
+                spawn_manager.newmob()

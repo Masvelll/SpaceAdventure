@@ -43,7 +43,7 @@ class Mob(pygame.sprite.Sprite):
 
     def update(self):
         self.rotate()
-        self.dif_increase()
+        #self.dif_increase()
         self.rect.y += self.speedy
         self.rect.x += self.speedx
 

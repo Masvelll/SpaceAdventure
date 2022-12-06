@@ -136,8 +136,8 @@ class Enemy(pygame.sprite.Sprite):
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             enemy_bullet = EnemyBullet(self.rect.centerx, self.rect.bottom)
-            all_sprites.add(enemy_bullet)
-            enemy_bullets.add(enemy_bullet)
+            game.all_sprites.add(enemy_bullet)
+            game.enemy_bullets.add(enemy_bullet)
 
 
 # Это показатель громкости
@@ -173,26 +173,20 @@ def draw_text(surf, text, size, x, y):
     surf.blit(text_surface, text_rect)
 
 
-all_sprites = pygame.sprite.Group()  # << для чего это? понятия не имею
-
-
-# А всё понял, мы будем писать all_sprites.update(),
-# чтобы не обновлять каждый спрайт по отдельности, умно, умно...
 
 
 def newenemy():
     m = Enemy()
-    all_sprites.add(m)
-    enemies.add(m)
+    #all_sprites.add(m)
+    game.enemies.add(m)
 
 
 # Инициализируем игрока и мобов
 
-player = Player()
-game = Game()
 music_manager = MusicManager()
+game = Game(music_manager)
+
 spawn_manager = SpawnManager(game)
-all_sprites.add(player)
 mobs = pygame.sprite.Group()
 
 for i in range(8):
@@ -512,11 +506,11 @@ def show_shop():
                     if cnt == 3:
                         waiting = False
 
-                    money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'WIDTH')
+                    money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'w')
                     money_file.write(str(player.money))
                     money_file.close()
 
-                    stats_file = open(os.path.join(DATA_DIR, 'stats.txt'), 'WIDTH')
+                    stats_file = open(os.path.join(DATA_DIR, 'stats.txt'), 'w')
                     stats_file.write('Power_lvl {}\n'.format(player.Power_lvl))
                     stats_file.write('Shield_lvl {}\n'.format(player.Shield_lvl))
                     stats_file.write('Atk_speed_lvl {}\n'.format(player.Atkspeed_lvl))
@@ -638,15 +632,15 @@ while running:
 
         game_over = False
         game.first_game = False
-        all_sprites = pygame.sprite.Group()
+        #all_sprites = pygame.sprite.Group()
 
-        mobs = pygame.sprite.Group()
-        enemies = pygame.sprite.Group()
+        #mobs = pygame.sprite.Group()
+        #enemies = pygame.sprite.Group()
 
-        bullets = pygame.sprite.Group()
-        enemy_bullets = pygame.sprite.Group()
-        player = Player()
-        all_sprites.add(player)
+        #bullets = pygame.sprite.Group()
+        #enemy_bullets = pygame.sprite.Group()
+        player = Player(game.all_sprites, game.bullets, music_manager)
+        game.all_sprites.add(player)
 
         game.stage = 0
         game.limit = 5000
@@ -669,10 +663,10 @@ while running:
         if event.type == pygame.KEYUP:
             pass
 
-    all_sprites.update()  # << великая вещь
+    game.all_sprites.update()
 
     if score >= game.limit and game.stage == 0:
-        game.boss()
+        game.next_level()
 
     now = pygame.time.get_ticks()
     if now - game.last_spawn > game.spawn_rate and game.stage == 1:
@@ -685,11 +679,11 @@ while running:
     for hit in hits:
         player.shield -= hit.radius * 2
         expl = Explosion(hit.rect.center, 'sm')
-        all_sprites.add(expl)
+        game.all_sprites.add(expl)
         spawn_manager.newmob(game)
         if player.shield <= 0:
             death_explosion = Explosion(player.rect.center, 'player')
-            all_sprites.add(death_explosion)
+            game.all_sprites.add(death_explosion)
             player.hide()
             player.lives -= 1
             player.shield = player.maxshield
@@ -722,36 +716,36 @@ while running:
         game_over = True
 
     # Проверка коллайда "моб - пуля"
-    hits = pygame.sprite.groupcollide(mobs, bullets, False, True)
+    hits = pygame.sprite.groupcollide(mobs, game.bullets, False, True)
     for hit in hits:
         hit.lives -= 1
         if hit.lives > 0:
             random.choice(music_manager.expl_sounds).play()
             expl_center = (hit.rect.center[0], hit.rect.bottom)
             expl = Explosion(expl_center, 'sm')
-            all_sprites.add(expl)
+            game.all_sprites.add(expl)
         else:
             hit.kill()
             score += 50 + hit.radius  # Очки считаются от радиуса
             random.choice(music_manager.expl_sounds).play()
             expl = Explosion(hit.rect.center, 'lg')
-            all_sprites.add(expl)
+            game.all_sprites.add(expl)
             if random.random() > 0.9 + player.power / 170 - 0.01:
                 pov = Pow(hit.rect.center)
-                all_sprites.add(pov)
+                game.all_sprites.add(pov)
                 powerups.add(pov)
             spawn_manager.newmob(game)
 
     # Проверка коллайда "игрок - вражеская пуля"
-    hits = pygame.sprite.spritecollide(player, enemy_bullets, True)
+    hits = pygame.sprite.spritecollide(player, game.enemy_bullets, True)
     for hit in hits:
         player.shield -= 50
         expl = Explosion(hit.rect.center, 'sm')
-        all_sprites.add(expl)
+        game.all_sprites.add(expl)
         spawn_manager.newmob(game)
         if player.shield <= 0:
             death_explosion = Explosion(player.rect.center, 'player')
-            all_sprites.add(death_explosion)
+            game.all_sprites.add(death_explosion)
             player.hide()
             player.lives -= 1
             player.shield = player.maxshield
@@ -760,23 +754,23 @@ while running:
             player.alive = False
 
     # Проверка коллайда "пуля - враг"
-    hits = pygame.sprite.groupcollide(enemies, bullets, False, True)
+    hits = pygame.sprite.groupcollide(game.enemies, game.bullets, False, True)
     for hit in hits:
         hit.lives -= 1
         if hit.lives > 0:
             random.choice(music_manager.expl_sounds).play()
             expl_center = (hit.rect.center[0], hit.rect.bottom)
             expl = Explosion(expl_center, 'sm')
-            all_sprites.add(expl)
+            game.all_sprites.add(expl)
         else:
             hit.kill()
             score += 500
             random.choice(music_manager.expl_sounds).play()
             expl = Explosion(hit.rect.center, 'lg')
-            all_sprites.add(expl)
+            game.all_sprites.add(expl)
             if random.random() > 0.9 + player.power / 170 - 0.01:
                 pov = Pow(hit.rect.center)
-                all_sprites.add(pov)
+                game.all_sprites.add(pov)
                 powerups.add(pov)
 
     if player.power >= 4:
@@ -785,7 +779,7 @@ while running:
         pow_lev = player.power
     screen.fill(BLACK)
     screen.blit(background, background_rect)
-    all_sprites.draw(screen)
+    game.all_sprites.draw(screen)
     draw_text(screen, str(score), 22, WIDTH / 2, 10)
     draw_text(screen, 'Power Lvl ' + str(pow_lev), 23, WIDTH - 60, 30)
     draw_shield_bar(screen, 5, 5, player.shield)
