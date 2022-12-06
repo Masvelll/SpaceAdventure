@@ -8,8 +8,34 @@ from settings import DATA_DIR, sound_state, music_state, WIDTH, HEIGHT, FPS, WHI
 from images import explosion_anim, enemy_img, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
 from spawn_manager import SpawnManager
+import logging
 
+from logging import config
 
+log_config = {
+    "version":1,
+    "root":{
+        "handlers" : ["console"],
+        "level": "INFO"
+    },
+    "handlers":{
+        "console":{
+            "formatter": "std_out",
+            "class": "logging.StreamHandler",
+            "level": "DEBUG"
+        }
+    },
+    "formatters":{
+        "std_out": {
+            "format": "%(asctime)s : %(levelname)s : %(module)s : %(funcName)s : %(lineno)d : %(message)s",
+            "datefmt":"%d-%m-%Y %I:%M:%S"
+        }
+    },
+}
+
+config.dictConfig(log_config)
+
+logger = logging.getLogger(__name__)
 
 pygame.init()
 pygame.mixer.init()  # это для звука (на будущее)
@@ -675,7 +701,7 @@ while running:
         newenemy()
 
     # Проверка коллайда "игрок - моб"
-    hits = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
+    hits = pygame.sprite.spritecollide(player, game.mobs, True, pygame.sprite.collide_circle)
     for hit in hits:
         player.shield -= hit.radius * 2
         expl = Explosion(hit.rect.center, 'sm')
@@ -716,7 +742,8 @@ while running:
         game_over = True
 
     # Проверка коллайда "моб - пуля"
-    hits = pygame.sprite.groupcollide(mobs, game.bullets, False, True)
+    hits = pygame.sprite.groupcollide(game.mobs, game.bullets, False, True)
+    #logger.debug(hits)
     for hit in hits:
         hit.lives -= 1
         if hit.lives > 0:
