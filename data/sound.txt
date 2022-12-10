@@ -1,2 +1,2 @@
-Sound_state 0
-Music_state 0
+Sound_state 2
+Music_state 2

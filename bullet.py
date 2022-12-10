@@ -1,5 +1,4 @@
 import pygame
-import os
 from images import enemy_bullet_img, bullet_images
 from settings import HEIGHT
 

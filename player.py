@@ -20,6 +20,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = WIDTH / 2  # заводим центральное положение
         self.rect.bottom = HEIGHT - 10
         self.speedx = 0  # это типа скорость, будем её к координате прибавлять
+        self.speedy = 0
         self.shield = 100
 
         self.last_shot = pygame.time.get_ticks()
@@ -62,10 +63,21 @@ class Player(pygame.sprite.Sprite):
             self.shoot()
         self.rect.x += self.speedx
 
+        if keystate[pygame.K_UP]:
+            self.speedy = -8
+        if keystate[pygame.K_DOWN]:
+            self.speedy = 8
+        self.rect.y += self.speedy
+
         if self.rect.right > WIDTH:
             self.rect.right = WIDTH
         if self.rect.left < 0:
             self.rect.left = 0
+
+        if self.rect.bottom > HEIGHT:
+                self.rect.bottom = HEIGHT
+        if self.rect.bottom < 35:
+                self.rect.bottom = 35
 
         if self.hidden and pygame.time.get_ticks() - self.hide_timer > 1000:
             self.hidden = False
