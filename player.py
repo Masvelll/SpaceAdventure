@@ -75,7 +75,7 @@ class Player(pygame.sprite.Sprite):
         if self.rect.left < 0:
             self.rect.left = 0
 
-        if self.rect.bottom > HEIGHT:
+        if self.rect.bottom > HEIGHT and not self.hidden:
             self.rect.bottom = HEIGHT
         if self.rect.bottom < 35:
             self.rect.bottom = 35
@@ -141,7 +141,7 @@ class Player(pygame.sprite.Sprite):
     def hide(self):
         self.hidden = True
         self.hide_timer = pygame.time.get_ticks()
-        self.rect.center = (WIDTH / 2, HEIGHT + 200)  # Телепортируем на время смерти
+        self.rect.center = (WIDTH / 2, HEIGHT + 2000)  # Телепортируем на время смерти
 
     def powerup(self):
         self.power += 1

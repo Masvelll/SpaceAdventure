@@ -154,14 +154,6 @@ font_name = pygame.font.match_font('droidsans')
 # Инициализируем игрока и мобов
 
 music_manager = MusicManager()
-game = Game(music_manager)
-
-spawn_manager = SpawnManager(game)
-mobs = pygame.sprite.Group()
-player = Player(game.all_sprites, game.bullets, music_manager)
-
-for i in range(8):
-    spawn_manager.newmob(game)
 
 
 # Пауза
@@ -545,7 +537,10 @@ powerups = pygame.sprite.Group()
 
 # Процесс игры
 
-
+game = Game(music_manager)
+player = Player(game.all_sprites, game.bullets, music_manager)
+game.all_sprites.add(player)
+spawn_manager = SpawnManager(game)
 game_over = True
 running = True
 while running:
@@ -562,19 +557,17 @@ while running:
             menu()
 
         game_over = False
+        player.alive = True
+        player.lives = 3
+        player.rect.centerx = WIDTH / 2
+        player.rect.bottom = HEIGHT - 10
+
         game.first_game = False
-        # all_sprites = pygame.sprite.Group()
 
-        # mobs = pygame.sprite.Group()
-        # enemies = pygame.sprite.Group()
-
-        # bullets = pygame.sprite.Group()
-        # enemy_bullets = pygame.sprite.Group()
-
-        game.all_sprites.add(player)
 
         game.stage = 0
         game.limit = 5000
+        game.spawn_rate = 15000
 
         for i in range(8):
             spawn_manager.newmob(game)
