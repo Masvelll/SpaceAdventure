@@ -12,9 +12,10 @@ class SpawnManager:
 
     def newmob(self, game):
         """Создаёт метеорит"""
-        m = Mob(self.stop)
-        game.all_sprites.add(m)
-        game.mobs.add(m)
+        if not self.stop:
+            m = Mob(self.stop)
+            game.all_sprites.add(m)
+            game.mobs.add(m)
 
     def spawn_enemy(self, game):
         """Создаёт врага"""

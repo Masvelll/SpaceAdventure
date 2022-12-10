@@ -4,7 +4,7 @@ import os
 from player import Player
 from rendering import draw_text, draw_shield_bar, draw_energy_bar, draw_lives
 from game import Game
-from settings import DATA_DIR, sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, IMG_DIR
+from settings import sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, IMG_DIR, DATA_DIR
 from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
 from spawn_manager import SpawnManager
@@ -575,7 +575,6 @@ while running:
 
         game.stage = 0
         game.limit = 5000
-        game.spawn_rate = 15000
 
         for i in range(8):
             spawn_manager.newmob(game)

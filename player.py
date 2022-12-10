@@ -54,6 +54,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.speedx = 0
+        self.speedy = 0
         keystate = pygame.key.get_pressed()  # Штука несёт зажатие каждой из клавиш
         if keystate[pygame.K_LEFT]:
             self.speedx = -8
@@ -75,9 +76,9 @@ class Player(pygame.sprite.Sprite):
             self.rect.left = 0
 
         if self.rect.bottom > HEIGHT:
-                self.rect.bottom = HEIGHT
+            self.rect.bottom = HEIGHT
         if self.rect.bottom < 35:
-                self.rect.bottom = 35
+            self.rect.bottom = 35
 
         if self.hidden and pygame.time.get_ticks() - self.hide_timer > 1000:
             self.hidden = False
