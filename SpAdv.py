@@ -551,8 +551,6 @@ powerups = pygame.sprite.Group()
 # Процесс игры
 
 game = Game(music_manager)
-player = Player(game.all_sprites, game.bullets, music_manager)
-game.all_sprites.add(player)
 spawn_manager = SpawnManager(game)
 game_over = True
 running = True
@@ -570,9 +568,15 @@ while running:
             menu()
 
         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
+
+        game.all_sprites = pygame.sprite.Group()
+        game.mobs = pygame.sprite.Group()
+        game.bullets = pygame.sprite.Group()
+        game.enemies = pygame.sprite.Group()
+        game.enemy_bullets = pygame.sprite.Group()
+        player = Player(game.all_sprites, game.bullets, music_manager)
+        game.all_sprites.add(player)
         game_over = False
-        player.alive = True
-        player.lives = 3
         player.rect.centerx = WIDTH / 2
         player.rect.bottom = HEIGHT - 10
 
