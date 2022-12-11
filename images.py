@@ -19,6 +19,7 @@ for img in meteor_list:
     meteor_images.append(pygame.image.load(os.path.join(IMG_DIR, img)).convert())
 
 enemy_img = pygame.image.load(os.path.join(IMG_DIR, "playerShip1_red.png"))
+boss_img = pygame.image.load(os.path.join(IMG_DIR, "BOSS 1.png"))
 
 explosion_anim = {
     'lg': [],
@@ -38,6 +39,14 @@ for i in range(9):
     img = pygame.image.load(os.path.join(IMG_DIR, filename)).convert()
     img.set_colorkey(BLACK)
     explosion_anim['player'].append(img)
+
+boss_bullet_anim = []
+for i in range(4):
+    filename = ''
+    filename = 'Lazer{}.png'.format(i+1)
+    img = pygame.image.load(os.path.join(IMG_DIR, filename))
+    img.set_colorkey(BLACK)
+    boss_bullet_anim.append(img)
 
 heart_img = pygame.image.load(os.path.join(IMG_DIR, 'heart.png')).convert()
 heart_mini_img = pygame.transform.scale(heart_img, (25, 25))

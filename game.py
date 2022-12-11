@@ -26,6 +26,7 @@ class Game:
         self.bullets = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
+        self.boss_bullets = pygame.sprite.Group()
 
     def entity_spawn(self):
         """Добавляет все группы спрайтов в all_sprites"""

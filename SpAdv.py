@@ -7,6 +7,7 @@ from game import Game
 from settings import sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, IMG_DIR, DATA_DIR
 from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
+
 from spawn_manager import SpawnManager
 import logging
 
@@ -586,6 +587,7 @@ while running:
         game.limit = 5000
         game.spawn_rate = 15000
 
+
         for i in range(8):
             spawn_manager.newmob(game)
 
@@ -613,6 +615,11 @@ while running:
         game.last_spawn = now
         game.spawn_rate *= 0.9
         spawn_manager.spawn_enemy(game)
+
+    if score >= 7000 and not spawn_manager.boss_here:
+        spawn_manager.stop = True
+        spawn_manager.boss_here = True
+        spawn_manager.spawn_boss(game)
 
     # Проверка коллайда "игрок - моб"
     hits = pygame.sprite.spritecollide(player, game.mobs, True, pygame.sprite.collide_circle)
@@ -693,7 +700,20 @@ while running:
             music_manager.fart_sound.play()
         if player.lives == 0:
             player.alive = False
-
+    hits = pygame.sprite.spritecollide(player, game.boss_bullets, True)
+    for hit in hits:
+        player.shield -= 10000
+        expl = Explosion(hit.rect.center, 'sm')
+        game.all_sprites.add(expl)
+        if player.shield <= 0:
+            death_explosion = Explosion(player.rect.center, 'player')
+            game.all_sprites.add(death_explosion)
+            player.hide()
+            player.lives -= 1
+            player.shield = player.maxshield
+            music_manager.fart_sound.play()
+        if player.lives == 0:
+            player.alive = False
     # Проверка коллайда "пуля - враг"
     hits = pygame.sprite.groupcollide(game.enemies, game.bullets, False, True)
     for hit in hits:
