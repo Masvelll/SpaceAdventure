@@ -7,10 +7,9 @@ from game import Game
 from settings import sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, IMG_DIR, DATA_DIR
 from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
-
 from spawn_manager import SpawnManager
-import logging
 
+import logging
 from logging import config
 
 log_config = {
@@ -528,7 +527,7 @@ def game_over_screen(scor):
                         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
                         waiting = False
                     if cnt == 1:
-                        menu(player)
+                        menu()
                         display.blit(background, background_rect)
                         pygame.display.flip()
                         waiting = False
@@ -569,7 +568,6 @@ while running:
             menu()
 
         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
-
         game.all_sprites = pygame.sprite.Group()
         game.mobs = pygame.sprite.Group()
         game.bullets = pygame.sprite.Group()
@@ -586,7 +584,6 @@ while running:
         game.stage = 0
         game.limit = 5000
         game.spawn_rate = 15000
-
 
         for i in range(8):
             spawn_manager.newmob(game)
@@ -746,7 +743,7 @@ while running:
     draw_shield_bar(display, 5, 5, player.shield, player)
     draw_energy_bar(display, WIDTH - 110, 5, (now - player.power_time) // 100, player.power)
     draw_lives(display, 12, 25, player.lives, heart_mini_img)
-    screen.blit(pygame.transform.scale(display, (WIDTH*1.2, HEIGHT*1.2)), (0, 0))
+    screen.blit(pygame.transform.scale(display, (WIDTH * 1.2, HEIGHT * 1.2)), (0, 0))
     pygame.display.flip()
 
 pygame.quit()
