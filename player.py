@@ -77,7 +77,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.rect.bottom > HEIGHT:
             self.rect.bottom = HEIGHT
-        if self.rect.bottom < 35  and not self.hidden:
+        if self.rect.bottom < 35 and not self.hidden:
             self.rect.bottom = 35
 
         if self.hidden and pygame.time.get_ticks() - self.hide_timer > 1000:

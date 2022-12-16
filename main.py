@@ -4,10 +4,12 @@ import os
 from player import Player
 from rendering import draw_text, draw_shield_bar, draw_energy_bar, draw_lives
 from game import Game
+from buttons import Button, button_reset, button_check, button_update
 from settings import sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK, IMG_DIR, DATA_DIR
 from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
 from spawn_manager import SpawnManager
+from menus import Shop
 
 import logging
 from logging import config
@@ -100,34 +102,6 @@ class Explosion(pygame.sprite.Sprite):
                 self.rect.center = center
 
 
-# Класс кнопок
-class Button():
-    def __init__(self, surf, text, size, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.active = False
-        self.x = x
-        self.y = y
-        self.size = size
-        self.text = text
-        self.surf = surf
-
-        self.font = pygame.font.Font(font_name, self.size)
-        self.text_surface = self.font.render(text, True, WHITE)
-        self.rect = self.text_surface.get_rect()
-
-    def update(self):
-
-        if self.active:
-            text = '> ' + self.text + ' <'
-        else:
-            text = self.text
-
-        self.text_surface = self.font.render(text, True, WHITE)
-        self.rect = self.text_surface.get_rect()
-        self.rect.midtop = (self.x, self.y)
-        # self.surf.blit(self.text_surface, self.rect)
-
-
 # Это показатель громкости
 class Mixer(pygame.sprite.Sprite):
     def __init__(self, x, y, state):
@@ -172,46 +146,42 @@ def pause():
     all_buttons = (button1, button2, button3, button4)
 
     waiting = True
-    cnt = 0
+    current_button = 0
     while waiting:
 
         clock.tick(FPS)
-        # Нужно зарисовывать экран картинкой со всеми игровыми элементами, но я хз как её получить
-        # Пробовал через pygame.display.get_surface(), не вышло
-        display.blit(background, background_rect)  # << Проблема тут  !!!
+        display.blit(background, background_rect)
         draw_text(display, "Pause", 82, WIDTH / 2, HEIGHT / 20)
 
-        for i in range(len(all_buttons)):
-            if i != cnt:
-                all_buttons[i].active = False
+        button_reset(all_buttons, current_button)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_DOWN:
-                    cnt = (cnt + 1) % 4
+                    current_button = (current_button + 1) % 4
                 if event.key == pygame.K_UP:
-                    cnt = (cnt - 1) % 4
+                    current_button = (current_button - 1) % 4
                 if event.key == pygame.K_ESCAPE:
                     waiting = False
 
                 if event.key == pygame.K_RETURN:
-                    if cnt == 0:
+                    if current_button == 0:
                         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
                         waiting = False
-                    if cnt == 1:
+                    if current_button == 1:
                         show_settings()
-                    if cnt == 2:
+                    if current_button == 2:
                         game_over = True
                         display.blit(background, background_rect)
                         pygame.display.flip()
                         waiting = False
-                    if cnt == 3:
+                    if current_button == 3:
                         pygame.quit()
                         exit()
 
-        all_buttons[cnt].active = True
+        all_buttons[current_button].active = True
         for but in all_buttons:
             but.update()
             but.surf.blit(but.text_surface, but.rect)
@@ -221,16 +191,21 @@ def pause():
 
 
 # Долгожданная менюшка
-def menu():
+def menu(show_shop):
+    def stop_waiting():
+        nonlocal waiting
+        waiting = False
+
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    button1 = Button(display, "Play", 40, WIDTH / 2, HEIGHT * 4 / 7 - 160)
-    button2 = Button(display, "Shop", 40, WIDTH / 2, HEIGHT * 4 / 7 - 80)
-    button3 = Button(display, "Settings", 40, WIDTH / 2, HEIGHT * 4 / 7)
-    button4 = Button(display, "Exit", 40, WIDTH / 2, HEIGHT * 4 / 7 + 80)
+    button1 = Button(display, "Play", 40, WIDTH / 2, HEIGHT * 4 / 7 - 160, stop_waiting)
+    button2 = Button(display, "Shop", 40, WIDTH / 2, HEIGHT * 4 / 7 - 80, show_shop)
+    button3 = Button(display, "Settings", 40, WIDTH / 2, HEIGHT * 4 / 7, show_settings)
+    button4 = Button(display, "Exit", 40, WIDTH / 2, HEIGHT * 4 / 7 + 80, pygame.quit)
     all_buttons = (button1, button2, button3, button4)
+    button_amount = len(all_buttons)
 
     waiting = True
-    cnt = 0
+    current_button = 0
     while waiting:
         clock.tick(FPS)
 
@@ -238,38 +213,14 @@ def menu():
         draw_text(display, "Space Adventure", 64, WIDTH / 2, HEIGHT / 10)
         draw_text(display, "Your highscore >> " + str(game.highscore), 28, WIDTH / 2, HEIGHT - 50)
 
-        for i in range(len(all_buttons)):
-            if i != cnt:
-                all_buttons[i].active = False
+        button_reset(all_buttons, current_button)
+        current_button = button_check(current_button, button_amount, all_buttons)
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    cnt = (cnt + 1) % 4
-                if event.key == pygame.K_UP:
-                    cnt = (cnt - 1) % 4
-
-                if event.key == pygame.K_RETURN:
-                    if cnt == 0:
-                        waiting = False
-                    if cnt == 1:
-                        show_shop()
-                    if cnt == 2:
-                        show_settings()
-                    if cnt == 3:
-                        pygame.quit()
-                        exit()
-
-        all_buttons[cnt].active = True
-        for but in all_buttons:
-            but.update()
-            but.surf.blit(but.text_surface, but.rect)
+        all_buttons[current_button].active = True
+        button_update(all_buttons)
 
         screen.blit(pygame.transform.scale(display, (WIDTH, HEIGHT)), (0, 0))
         pygame.display.flip()
-        # print(button1.active, button2.active, button3.active)
 
 
 # Настройки
@@ -363,128 +314,6 @@ def show_settings():
         pygame.display.flip()
 
 
-def show_shop():
-    MAX = 3
-    Upgrade_Levels = []
-    for i in (player.Power_lvl, player.Shield_lvl, player.Atkspeed_lvl):
-        if i == MAX:
-            Upgrade_Levels.append('MAX')
-        else:
-            Upgrade_Levels.append(str(i))
-
-    button1 = Button(display, "Power lvl " + Upgrade_Levels[0], 30, WIDTH / 2, HEIGHT / 2.3 - 100)
-    button2 = Button(display, "Shield lvl " + Upgrade_Levels[1], 30, WIDTH / 2, HEIGHT / 2.3)
-    button3 = Button(display, "Atk Speed lvl " + Upgrade_Levels[2], 30, WIDTH / 2, HEIGHT / 2.3 + 100)
-    button4 = Button(display, "Back", 30, WIDTH / 2, HEIGHT / 2.3 + 200)
-    all_buttons = (button1, button2, button3, button4)
-
-    waiting = True
-    cnt = 0
-    while waiting:
-        clock.tick(FPS)
-
-        display.blit(background, background_rect)
-        draw_text(display, "Shop", 64, WIDTH / 2, HEIGHT / 10)
-        draw_text(display, "Your money >> " + str(player.money), 28, WIDTH / 2, HEIGHT - 50)
-        draw_text(display, "Info:", 35, WIDTH / 2 + 100, HEIGHT / 2.3 - 110)
-        outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 100, 220, 70)
-        pygame.draw.rect(display, WHITE, outline_rect, 3)
-        outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 30, 220, 30)
-        pygame.draw.rect(display, WHITE, outline_rect, 3)
-
-        power_cost = 50 * player.Power_lvl
-        shield_cost = 50 * player.Shield_lvl
-        atkspeed_cost = 50 * player.Atkspeed_lvl
-
-        for i in range(len(all_buttons)):
-            if i != cnt:
-                all_buttons[i].active = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    cnt = (cnt + 1) % 4
-                if event.key == pygame.K_UP:
-                    cnt = (cnt - 1) % 4
-
-                if event.key == pygame.K_RETURN:
-                    if cnt == 0 and player.Power_lvl < 3 and player.money >= power_cost:
-                        player.Power_lvl += 1
-                        player.money -= power_cost
-                        if player.Power_lvl < 3:
-                            text = "Power lvl " + str(player.Power_lvl)
-                        else:
-                            text = "Power lvl MAX"
-                        button1.text = text
-                    if cnt == 1 and player.Shield_lvl < 3 and player.money >= shield_cost:
-                        player.Shield_lvl += 1
-                        player.money -= shield_cost
-                        if player.Shield_lvl < 3:
-                            text = "Shield lvl " + str(player.Shield_lvl)
-                        else:
-                            text = "Shield lvl MAX"
-                        button2.text = text
-                    if cnt == 2 and player.Atkspeed_lvl < 3 and player.money >= atkspeed_cost:
-                        player.Atkspeed_lvl += 1
-                        player.money -= atkspeed_cost
-                        if player.Atkspeed_lvl < 3:
-                            text = "Atk speed lvl " + str(player.Atkspeed_lvl)
-                        else:
-                            text = "Atk speed lvl MAX"
-                        button3.text = text
-                    if cnt == 3:
-                        waiting = False
-
-                    money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'w')
-                    money_file.write(str(player.money))
-                    money_file.close()
-
-                    stats_file = open(os.path.join(DATA_DIR, 'stats.txt'), 'w')
-                    stats_file.write('Power_lvl {}\n'.format(player.Power_lvl))
-                    stats_file.write('Shield_lvl {}\n'.format(player.Shield_lvl))
-                    stats_file.write('Atk_speed_lvl {}\n'.format(player.Atkspeed_lvl))
-                    stats_file.close()
-
-        if cnt == 0:
-            draw_text(display, "Increases starting", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-            draw_text(display, "power lvl", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
-            if player.Power_lvl == MAX:
-                text = '--'
-            else:
-                text = str(power_cost)
-            draw_text(display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-        if cnt == 1:
-            draw_text(display, "Increases maximum", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-            draw_text(display, "shield value", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
-            if player.Shield_lvl == MAX:
-                text = '--'
-            else:
-                text = str(shield_cost)
-            draw_text(display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-        if cnt == 2:
-            draw_text(display, "Increases attack", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-            draw_text(display, "speed of your ship", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
-            if player.Atkspeed_lvl == MAX:
-                text = '--'
-            else:
-                text = str(atkspeed_cost)
-            draw_text(display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-        if cnt == 3:
-            draw_text(display, "Choose an upgrade", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-            draw_text(display, "Upgrade cost >>  --", 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-        all_buttons[cnt].active = True
-        for but in all_buttons:
-            but.update()
-            but.rect.left = 20
-            but.surf.blit(but.text_surface, but.rect)
-
-        screen.blit(pygame.transform.scale(display, (WIDTH, HEIGHT)), (0, 0))
-        pygame.display.flip()
-        # print(button1.active, button2.active, button3.active)
-
-
 def game_over_screen(scor):
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     button1 = Button(display, "Play again", 40, WIDTH / 2, HEIGHT / 2 - 100)
@@ -527,7 +356,7 @@ def game_over_screen(scor):
                         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
                         waiting = False
                     if cnt == 1:
-                        menu()
+                        menu(player)
                         display.blit(background, background_rect)
                         pygame.display.flip()
                         waiting = False
@@ -562,13 +391,14 @@ while running:
             snd.set_volume(sound_state / 3)
         pygame.mixer.music.set_volume(music_state / 3)
 
+        player = Player(game.all_sprites, game.bullets, music_manager)
+        shop = Shop(display, player, clock)
         if not game.first_game:
             game_over_screen(score)
         else:
-            menu()
+            menu(shop.show_shop)
 
         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
-        player = Player(game.all_sprites, game.bullets, music_manager)
         game.all_sprites.add(player)
         game_over = False
         player.rect.centerx = WIDTH / 2
@@ -608,8 +438,8 @@ while running:
         game.spawn_rate *= 0.9
         spawn_manager.spawn_enemy(game)
 
-    if score >= 500 and not spawn_manager.boss_here:
-        spawn_manager.stop = True
+    if score >= 7000 and not spawn_manager.boss_here:
+        #spawn_manager.stop = True
         spawn_manager.boss_here = True
         spawn_manager.spawn_boss(game)
 
@@ -748,7 +578,6 @@ while running:
                 game.all_sprites.add(expl)
             hit.kill()
 
-
     # Проверка коллайда "игрок - вражеская пуля"
     hits = pygame.sprite.spritecollide(player, game.enemy_bullets, True)
     for hit in hits:
@@ -766,7 +595,7 @@ while running:
         if player.lives == 0:
             player.alive = False
 
-        #Вжух от босса
+        # Вжух от босса
     hits = pygame.sprite.spritecollide(player, game.boss_bullets, True)
     for hit in hits:
         player.shield -= 10000

@@ -6,6 +6,7 @@ from images import meteor_images
 
 class Mob(pygame.sprite.Sprite):
     """Класс метеоритов"""
+
     def __init__(self, is_stop):
         pygame.sprite.Sprite.__init__(self)
         self.image_orig = random.choice(meteor_images)
@@ -44,7 +45,8 @@ class Mob(pygame.sprite.Sprite):
         self.rect.y += self.speedy
         self.rect.x += self.speedx
 
-        if (self.rect.top > HEIGHT + 10 or self.rect.top < 0) and self.stop:
+        if (
+                self.rect.top > HEIGHT + 10 or self.rect.top < 0 or self.rect.left > WIDTH or self.rect.right < 0) and self.stop:
             self.kill()
 
         if self.rect.top > HEIGHT + 10:  # Если моб уходит вниз, то тпхаем его наверх

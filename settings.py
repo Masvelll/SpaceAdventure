@@ -1,5 +1,6 @@
 import os
 import sys
+import pygame
 
 #  Game setup
 WIDTH = 480
@@ -12,6 +13,9 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
+
+#  Fonts
+font_name = pygame.font.match_font('droidsans')
 
 #  Directories
 config_name = 'myapp.cfg'

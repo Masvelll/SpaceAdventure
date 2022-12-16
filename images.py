@@ -5,7 +5,7 @@ from settings import IMG_DIR, BLACK, WIDTH, HEIGHT
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-background = pygame.image.load(os.path.join(IMG_DIR, 'starfield.jpg'))
+background = pygame.image.load(os.path.join(IMG_DIR, 'starfield.png'))
 background_rect = background.get_rect()
 player_img = pygame.image.load(os.path.join(IMG_DIR, "playerShip2_green.png"))
 pygame.display.set_icon(player_img)
