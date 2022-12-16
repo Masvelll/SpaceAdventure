@@ -79,7 +79,7 @@ class Boss(pygame.sprite.Sprite):
         self.rect.x += self.speedx
         self.rect.y += self.speedy
 
-        if (self.rect.top <= 10 or self.rect.bottom >= 400) and self.state == 3:
+        if (self.rect.top <= 0 or self.rect.bottom >= 400) and self.state == 3:
             self.speedy *= -1
         if (self.rect.right > WIDTH or self.rect.left < 0) and self.state == 3:
             self.speedx *= -1
@@ -124,7 +124,7 @@ class Boss(pygame.sprite.Sprite):
             self.rect.y = -200
             self.speedy = 1
             self.speedx = 0
-        if now - self.time_appear > 7000 and self.state == 2:
+        if now - self.time_appear > 7500 and self.state == 2:
             self.state = 3
             self.speedy = random.randrange(1, 2)
             self.speedx = random.randrange(1, 2)

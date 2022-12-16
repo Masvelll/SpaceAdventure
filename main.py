@@ -438,7 +438,7 @@ while running:
         game.spawn_rate *= 0.9
         spawn_manager.spawn_enemy(game)
 
-    if score >= 700 and not spawn_manager.boss_here:
+    if score >= 7000 and not spawn_manager.boss_here:
         #spawn_manager.stop = True
         spawn_manager.boss_here = True
         spawn_manager.spawn_boss(game)
