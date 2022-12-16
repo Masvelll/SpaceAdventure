@@ -27,4 +27,5 @@ class SpawnManager:
     def spawn_boss(self, game):
         m = Boss(game.all_sprites, game.boss_bullets)
         game.all_sprites.add(m)
+        game.boss.add(m)
 

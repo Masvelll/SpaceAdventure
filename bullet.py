@@ -3,7 +3,8 @@ from images import enemy_bullet_img, bullet_images, boss_bullet_anim
 from settings import HEIGHT
 
 
-class Bullet(pygame.sprite.Sprite):
+class PlayerBullet(pygame.sprite.Sprite):
+    """Класс пуль игрока"""
     def __init__(self, x, y, size):
         pygame.sprite.Sprite.__init__(self)
         self.image = bullet_images[size]
@@ -19,8 +20,8 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 
-# Класс пуль врага
 class EnemyBullet(pygame.sprite.Sprite):
+    """Класс пуль врагов"""
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = enemy_bullet_img
@@ -37,6 +38,7 @@ class EnemyBullet(pygame.sprite.Sprite):
 
 
 class BossBullet(pygame.sprite.Sprite):
+    """Класс пуль Босса"""
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = boss_bullet_anim[0]

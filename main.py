@@ -568,11 +568,6 @@ while running:
             menu()
 
         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
-        game.all_sprites = pygame.sprite.Group()
-        game.mobs = pygame.sprite.Group()
-        game.bullets = pygame.sprite.Group()
-        game.enemies = pygame.sprite.Group()
-        game.enemy_bullets = pygame.sprite.Group()
         player = Player(game.all_sprites, game.bullets, music_manager)
         game.all_sprites.add(player)
         game_over = False
@@ -613,7 +608,7 @@ while running:
         game.spawn_rate *= 0.9
         spawn_manager.spawn_enemy(game)
 
-    if score >= 7000 and not spawn_manager.boss_here:
+    if score >= 500 and not spawn_manager.boss_here:
         spawn_manager.stop = True
         spawn_manager.boss_here = True
         spawn_manager.spawn_boss(game)
@@ -681,6 +676,79 @@ while running:
                 powerups.add(pov)
             spawn_manager.newmob(game)
 
+    # Проверка коллайда "БОСС - пуля"
+    hits = pygame.sprite.groupcollide(game.boss, game.bullets, False, True, pygame.sprite.collide_circle)
+    # logger.debug(hits)
+    if hits:
+        for hit in list(hits.values())[0]:
+            hit_obj = [x for x in hits.keys()][0]
+
+            hit_obj.lives -= 1
+            if hit_obj.lives > 0:
+                random.choice(music_manager.expl_sounds).play()
+                expl_center = (hit.rect.center[0], hit.rect.center[1])
+                expl = Explosion(expl_center, 'sm')
+                game.all_sprites.add(expl)
+            else:
+                hit.kill()
+                score += 5000 + hit.radius  # Очки считаются от радиуса
+                random.choice(music_manager.expl_sounds).play()
+                expl = Explosion(hit.rect.center, 'lg')
+                game.all_sprites.add(expl)
+                if random.random() > 0.9 + player.power / 170 - 0.01:
+                    pov = Pow(hit.rect.center)
+                    game.all_sprites.add(pov)
+                    powerups.add(pov)
+                spawn_manager.newmob(game)
+            hit.kill()
+
+        # Проверка коллайда "БОСС - пуля"
+        hits = pygame.sprite.groupcollide(game.boss, game.bullets, False, True, pygame.sprite.collide_circle)
+        # logger.debug(hits)
+        if hits:
+            for hit in list(hits.values())[0]:
+                hit_obj = [x for x in hits.keys()][0]
+
+                hit_obj.lives -= 1
+                if hit_obj.lives > 0:
+                    random.choice(music_manager.expl_sounds).play()
+                    expl_center = (hit.rect.center[0], hit.rect.center[1])
+                    expl = Explosion(expl_center, 'sm')
+                    game.all_sprites.add(expl)
+                else:
+                    hit.kill()
+                    score += 5000 + hit.radius  # Очки считаются от радиуса
+                    random.choice(music_manager.expl_sounds).play()
+                    expl = Explosion(hit.rect.center, 'lg')
+                    game.all_sprites.add(expl)
+                    if random.random() > 0.9 + player.power / 170 - 0.01:
+                        pov = Pow(hit.rect.center)
+                        game.all_sprites.add(pov)
+                        powerups.add(pov)
+                    spawn_manager.newmob(game)
+                hit.kill()
+
+    # Проверка коллайда "БОСС - метеорит"
+    hits = pygame.sprite.groupcollide(game.boss, game.mobs, False, True, pygame.sprite.collide_circle)
+    # logger.debug(hits)
+    if hits:
+        for hit in list(hits.values())[0]:
+            hit_obj = [x for x in hits.keys()][0]
+
+            hit_obj.lives -= 1
+            if hit_obj.lives > 0:
+                random.choice(music_manager.expl_sounds).play()
+                expl_center = (hit.rect.center[0], hit.rect.center[1])
+                expl = Explosion(expl_center, 'sm')
+                game.all_sprites.add(expl)
+            else:
+                hit.kill()
+                random.choice(music_manager.expl_sounds).play()
+                expl = Explosion(hit.rect.center, 'lg')
+                game.all_sprites.add(expl)
+            hit.kill()
+
+
     # Проверка коллайда "игрок - вражеская пуля"
     hits = pygame.sprite.spritecollide(player, game.enemy_bullets, True)
     for hit in hits:
@@ -697,6 +765,8 @@ while running:
             music_manager.fart_sound.play()
         if player.lives == 0:
             player.alive = False
+
+        #Вжух от босса
     hits = pygame.sprite.spritecollide(player, game.boss_bullets, True)
     for hit in hits:
         player.shield -= 10000

@@ -1,7 +1,7 @@
 import pygame
 import os
 from settings import HEIGHT, WIDTH, DATA_DIR, IMG_DIR
-from bullet import Bullet
+from bullet import PlayerBullet
 import sys
 
 config_name = 'myapp.cfg'
@@ -100,22 +100,22 @@ class Player(pygame.sprite.Sprite):
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             if self.power == 1:
-                bullet = Bullet(self.rect.centerx, self.rect.top, 'lg')
+                bullet = PlayerBullet(self.rect.centerx, self.rect.top, 'lg')
                 self.all_sprites.add(bullet)
                 self.bullets.add(bullet)
                 self.music_manager.shoot_sound.play()
             if self.power == 2:
-                bullet1 = Bullet(self.rect.left, self.rect.centery, 'lg')
-                bullet2 = Bullet(self.rect.right, self.rect.centery, 'lg')
+                bullet1 = PlayerBullet(self.rect.left, self.rect.centery, 'lg')
+                bullet2 = PlayerBullet(self.rect.right, self.rect.centery, 'lg')
                 self.all_sprites.add(bullet1)
                 self.all_sprites.add(bullet2)
                 self.bullets.add(bullet1)
                 self.bullets.add(bullet2)
                 self.music_manager.shoot_sound.play()
             if self.power == 3:
-                bullet1 = Bullet(self.rect.centerx, self.rect.top, 'lg')
-                bullet2 = Bullet(self.rect.right, self.rect.centery, 'sm')
-                bullet3 = Bullet(self.rect.left, self.rect.centery, 'sm')
+                bullet1 = PlayerBullet(self.rect.centerx, self.rect.top, 'lg')
+                bullet2 = PlayerBullet(self.rect.right, self.rect.centery, 'sm')
+                bullet3 = PlayerBullet(self.rect.left, self.rect.centery, 'sm')
                 self.all_sprites.add(bullet1)
                 self.all_sprites.add(bullet2)
                 self.all_sprites.add(bullet3)
@@ -124,10 +124,10 @@ class Player(pygame.sprite.Sprite):
                 self.bullets.add(bullet3)
                 self.music_manager.shoot_sound.play()
             if self.power >= 4:
-                bullet1 = Bullet(self.rect.right + 5, self.rect.centery, 'sm')
-                bullet2 = Bullet(self.rect.left - 5, self.rect.centery, 'sm')
-                bullet3 = Bullet(self.rect.right - 10, self.rect.top, 'lg')
-                bullet4 = Bullet(self.rect.left + 10, self.rect.top, 'lg')
+                bullet1 = PlayerBullet(self.rect.right + 5, self.rect.centery, 'sm')
+                bullet2 = PlayerBullet(self.rect.left - 5, self.rect.centery, 'sm')
+                bullet3 = PlayerBullet(self.rect.right - 10, self.rect.top, 'lg')
+                bullet4 = PlayerBullet(self.rect.left + 10, self.rect.top, 'lg')
                 self.all_sprites.add(bullet1)
                 self.all_sprites.add(bullet2)
                 self.all_sprites.add(bullet3)
