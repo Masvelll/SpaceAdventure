@@ -48,7 +48,7 @@ class BossBullet(pygame.sprite.Sprite):
         self.speedy = 10
         self.frame = 0
         self.last_update = pygame.time.get_ticks()
-        self.frame_rate = 150
+        self.frame_rate = 90
 
     def update(self):
         now = pygame.time.get_ticks()
