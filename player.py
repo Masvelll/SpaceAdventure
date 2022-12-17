@@ -41,6 +41,7 @@ class Player(pygame.sprite.Sprite):
         self.Power_lvl = int(stats[0].split()[1])
         self.Shield_lvl = int(stats[1].split()[1])
         self.Atkspeed_lvl = int(stats[2].split()[1])
+
         stats_file.close()
 
         self.maxshield = 100 * (1 + self.Shield_lvl / 3)

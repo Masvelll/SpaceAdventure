@@ -20,46 +20,96 @@ class Shop:
         self.display = pygame.Surface((WIDTH, HEIGHT))
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-        self.stats = (player.Shield_lvl, player.Atkspeed_lvl, player.Power_lvl)
-        self.stats_text = {
-            player.Shield_lvl: "Shield lvl ",
-            player.Atkspeed_lvl: "Atkspeed lvl ",
-            player.Power_lvl: "Power lvl "
+        self.stats = {
+            "Shield": ["Shield lvl ", player.Shield_lvl],
+            "Atkspeed": ["Atk Speed lvl ", player.Atkspeed_lvl],
+            "Power": ["Power lvl ", player.Power_lvl]
         }
 
-    def increase_stat(self, stat_lvl, button):
+    def increase_stat(self, stat_type, button):
         """Увеличивает уровень определённой характеристики игрока"""
-        cost = 50 * stat_lvl
-
-        if stat_lvl < 3 and self.player.money >= cost:
-            stat_lvl += 1
+        cost = 50 * self.stats[stat_type][1]
+        print(self.stats[stat_type][0], self.stats[stat_type][1])
+        if self.stats[stat_type][1] < 3 and self.player.money >= cost:
+            self.stats[stat_type][1] += 1
             self.player.money -= cost
-            if stat_lvl < 3:
-                text = self.stats_text[stat_lvl] + str(self.player.Shield_lvl)
+            if self.stats[stat_type][1] < 3:
+                text = self.stats[stat_type][0] + str(self.stats[stat_type][1])
             else:
-                text = self.stats_text[stat_lvl] + "MAX"
+                text = self.stats[stat_type][0] + "MAX"
             button.text = text
+        return self.stats[stat_type][1]
 
     def money_write(self):
         """Записывает значение количества денег в файл"""
+        print("written", self.stats)
+        print(self.player.Power_lvl, self.player.Shield_lvl, self.player.Atkspeed_lvl)
+        money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'w')
+        money_file.write(str(self.player.money))
+        money_file.close()
+
+        stats_file = open(os.path.join(DATA_DIR, 'stats.txt'), 'w')
+        stats_file.write('Power_lvl {}\n'.format(self.stats["Power"][1]))
+        stats_file.write('Shield_lvl {}\n'.format(self.stats["Shield"][1]))
+        stats_file.write('Atk_speed_lvl {}\n'.format(self.stats["Atkspeed"][1]))
+        stats_file.close()
+
+    def show_description(self, current_button):
+        """Показывает описание улучшений"""
+        maximum = 3
+        power_cost = 50 * self.player.Power_lvl
+        shield_cost = 50 * self.player.Shield_lvl
+        atkspeed_cost = 50 * self.player.Atkspeed_lvl
+
+        if current_button == 0:
+            draw_text(self.display, "Increases starting", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
+            draw_text(self.display, "power lvl", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
+            if self.player.Power_lvl == maximum:
+                text = '--'
+            else:
+                text = str(power_cost)
+            draw_text(self.display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
+        if current_button == 1:
+            draw_text(self.display, "Increases maximum", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
+            draw_text(self.display, "shield value", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
+            if self.player.Shield_lvl == maximum:
+                text = '--'
+            else:
+                text = str(shield_cost)
+            draw_text(self.display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
+        if current_button == 2:
+            draw_text(self.display, "Increases attack", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
+            draw_text(self.display, "speed of your ship", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
+            if self.player.Atkspeed_lvl == maximum:
+                text = '--'
+            else:
+                text = str(atkspeed_cost)
+            draw_text(self.display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
+        if current_button == 3:
+            draw_text(self.display, "Choose an upgrade", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
+            draw_text(self.display, "Upgrade cost >>  --", 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
+
+    def lvl_text(self, stat_lvl):
+        """Возвращает текст, отображённый на кнопке по уровню переданной характеристики"""
+        if stat_lvl == 3:
+            return "MAX"
+        return str(stat_lvl)
 
     def show_shop(self):
         def skip():
             pass
 
-        maximum = 3
-        upgrade_levels = []
-        for i in (self.player.Power_lvl, self.player.Shield_lvl, self.player.Atkspeed_lvl):
-            if i == maximum:
-                upgrade_levels.append('MAX')
-            else:
-                upgrade_levels.append(str(i))
-
-        button1 = Button(self.display, "Power lvl " + upgrade_levels[0], 30, WIDTH / 2, HEIGHT / 2.3 - 100, skip())
-        button2 = Button(self.display, "Shield lvl " + upgrade_levels[1], 30, WIDTH / 2, HEIGHT / 2.3, skip())
-        button3 = Button(self.display, "Atk Speed lvl " + upgrade_levels[2], 30, WIDTH / 2, HEIGHT / 2.3 + 100, skip())
-        button4 = Button(self.display, "Back", 30, WIDTH / 2, HEIGHT / 2.3 + 200, skip())
-        all_buttons = (button1, button2, button3, button4)
+        button_power = Button(self.display, "Power lvl " + self.lvl_text(self.player.Power_lvl), 30, WIDTH / 2,
+                              HEIGHT / 2.3 - 100,
+                              skip())
+        button_shield = Button(self.display, "Shield lvl " + self.lvl_text(self.player.Shield_lvl), 30, WIDTH / 2,
+                               HEIGHT / 2.3, skip())
+        button_atkspeed = Button(self.display, "Atk Speed lvl " + self.lvl_text(self.player.Atkspeed_lvl), 30,
+                                 WIDTH / 2,
+                                 HEIGHT / 2.3 + 100,
+                                 skip())
+        button_back = Button(self.display, "Back", 30, WIDTH / 2, HEIGHT / 2.3 + 200, skip())
+        all_buttons = (button_power, button_shield, button_atkspeed, button_back)
 
         waiting = True
         current_button = 0
@@ -94,51 +144,17 @@ class Shop:
 
                     if event.key == pygame.K_RETURN:
                         if current_button == 0 and self.player.Power_lvl < 3 and self.player.money >= power_cost:
-                            self.increase_stat(self.player.Power_lvl, button1)
+                            self.player.Power_lvl = self.increase_stat("Power", button_power)
                         if current_button == 1 and self.player.Shield_lvl < 3 and self.player.money >= shield_cost:
-                            self.increase_stat(self.player.Power_lvl, button1)
+                            self.player.Shield_lvl = self.increase_stat("Shield", button_shield)
                         if current_button == 2 and self.player.Atkspeed_lvl < 3 and self.player.money >= atkspeed_cost:
-                            self.increase_stat(self.player.Power_lvl, button1)
+                            self.player.Atkspeed_lvl = self.increase_stat("Atkspeed", button_atkspeed)
                         if current_button == 3:
                             waiting = False
 
-                        money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'w')
-                        money_file.write(str(self.player.money))
-                        money_file.close()
+                        self.money_write()
 
-                        stats_file = open(os.path.join(DATA_DIR, 'stats.txt'), 'w')
-                        stats_file.write('Power_lvl {}\n'.format(self.player.Power_lvl))
-                        stats_file.write('Shield_lvl {}\n'.format(self.player.Shield_lvl))
-                        stats_file.write('Atk_speed_lvl {}\n'.format(self.player.Atkspeed_lvl))
-                        stats_file.close()
-
-            if current_button == 0:
-                draw_text(self.display, "Increases starting", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-                draw_text(self.display, "power lvl", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
-                if self.player.Power_lvl == maximum:
-                    text = '--'
-                else:
-                    text = str(power_cost)
-                draw_text(self.display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-            if current_button == 1:
-                draw_text(self.display, "Increases maximum", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-                draw_text(self.display, "shield value", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
-                if self.player.Shield_lvl == maximum:
-                    text = '--'
-                else:
-                    text = str(shield_cost)
-                draw_text(self.display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-            if current_button == 2:
-                draw_text(self.display, "Increases attack", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-                draw_text(self.display, "speed of your ship", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 20)
-                if self.player.Atkspeed_lvl == maximum:
-                    text = '--'
-                else:
-                    text = str(atkspeed_cost)
-                draw_text(self.display, "Upgrade cost >> " + text, 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
-            if current_button == 3:
-                draw_text(self.display, "Choose an upgrade", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
-                draw_text(self.display, "Upgrade cost >>  --", 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
+            self.show_description(current_button)
             all_buttons[current_button].active = True
             for but in all_buttons:
                 but.update()
