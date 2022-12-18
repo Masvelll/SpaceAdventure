@@ -9,7 +9,7 @@ from settings import sound_state, music_state, WIDTH, HEIGHT, FPS, WHITE, BLACK,
 from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
 from music_manager import MusicManager
 from spawn_manager import SpawnManager
-from menus import Shop
+from menus import Shop, MainMenu
 
 import logging
 from logging import config
@@ -190,38 +190,6 @@ def pause():
         pygame.display.flip()
 
 
-# Долгожданная менюшка
-def menu(show_shop):
-    def stop_waiting():
-        nonlocal waiting
-        waiting = False
-
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    button1 = Button(display, "Play", 40, WIDTH / 2, HEIGHT * 4 / 7 - 160, stop_waiting)
-    button2 = Button(display, "Shop", 40, WIDTH / 2, HEIGHT * 4 / 7 - 80, show_shop)
-    button3 = Button(display, "Settings", 40, WIDTH / 2, HEIGHT * 4 / 7, show_settings)
-    button4 = Button(display, "Exit", 40, WIDTH / 2, HEIGHT * 4 / 7 + 80, pygame.quit)
-    all_buttons = (button1, button2, button3, button4)
-    button_amount = len(all_buttons)
-
-    waiting = True
-    current_button = 0
-    while waiting:
-        clock.tick(FPS)
-
-        display.blit(background, background_rect)
-        draw_text(display, "Space Adventure", 64, WIDTH / 2, HEIGHT / 10)
-        draw_text(display, "Your highscore >> " + str(game.highscore), 28, WIDTH / 2, HEIGHT - 50)
-
-        button_reset(all_buttons, current_button)
-        current_button = button_check(current_button, button_amount, all_buttons)
-
-        all_buttons[current_button].active = True
-        button_update(all_buttons)
-
-        screen.blit(pygame.transform.scale(display, (WIDTH, HEIGHT)), (0, 0))
-        pygame.display.flip()
-
 
 # Настройки
 
@@ -314,7 +282,7 @@ def show_settings():
         pygame.display.flip()
 
 
-def game_over_screen(scor):
+def game_over_screen(scor, show_menu):
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     button1 = Button(display, "Play again", 40, WIDTH / 2, HEIGHT / 2 - 100)
     button2 = Button(display, "Back to menu", 40, WIDTH / 2, HEIGHT / 2)
@@ -356,7 +324,7 @@ def game_over_screen(scor):
                         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
                         waiting = False
                     if cnt == 1:
-                        menu(player)
+                        show_menu(player)
                         display.blit(background, background_rect)
                         pygame.display.flip()
                         waiting = False
@@ -392,11 +360,12 @@ while running:
         pygame.mixer.music.set_volume(music_state / 3)
 
         player = Player(game.all_sprites, game.bullets, music_manager)
+        main_menu = MainMenu(display, clock)
         shop = Shop(display, player, clock)
         if not game.first_game:
-            game_over_screen(score)
+            game_over_screen(score, main_menu.show_menu)
         else:
-            menu(shop.show_shop)
+            main_menu.show_menu(shop.show_shop, show_settings, game.highscore)
 
         screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
         game.all_sprites.add(player)

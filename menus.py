@@ -1,14 +1,48 @@
 import pygame
-from buttons import Button
+from buttons import Button, button_reset, button_update, button_check
 from settings import WIDTH, HEIGHT, FPS, DATA_DIR, WHITE
 from images import background, background_rect
 from rendering import draw_text
 import os
 
 
-class Menu:
-    def __init__(self):
+class MainMenu:
+    def __init__(self, display, clock):
         self.waiting = True
+        self.display = display
+        self.clock = clock
+
+    def show_menu(self, show_shop, show_settings, highscore):
+        def stop_waiting():
+            nonlocal waiting
+            waiting = False
+
+        display = self.display
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        button_play = Button(display, "Play", 40, WIDTH / 2, HEIGHT * 4 / 7 - 160, stop_waiting)
+        button_shop = Button(display, "Shop", 40, WIDTH / 2, HEIGHT * 4 / 7 - 80, show_shop)
+        button_settings = Button(display, "Settings", 40, WIDTH / 2, HEIGHT * 4 / 7, show_settings)
+        button_exit = Button(display, "Exit", 40, WIDTH / 2, HEIGHT * 4 / 7 + 80, pygame.quit)
+        all_buttons = (button_play, button_shop, button_settings, button_exit)
+        button_amount = len(all_buttons)
+
+        waiting = True
+        current_button = 0
+        while waiting:
+            self.clock.tick(FPS)
+
+            display.blit(background, background_rect)
+            draw_text(display, "Space Adventure", 64, WIDTH / 2, HEIGHT / 10)
+            draw_text(display, "Your highscore >> " + str(highscore), 28, WIDTH / 2, HEIGHT - 50)
+
+            button_reset(all_buttons, current_button)
+            current_button = button_check(current_button, button_amount, all_buttons)
+
+            all_buttons[current_button].active = True
+            button_update(all_buttons)
+
+            screen.blit(pygame.transform.scale(display, (WIDTH, HEIGHT)), (0, 0))
+            pygame.display.flip()
 
 
 class Shop:
@@ -89,13 +123,7 @@ class Shop:
             draw_text(self.display, "Choose an upgrade", 30, WIDTH / 2 + 100, HEIGHT / 2.3 - 50)
             draw_text(self.display, "Upgrade cost >>  --", 30, WIDTH / 2 + 100, HEIGHT / 2.3 + 15)
 
-    def lvl_text(self, stat_lvl):
-        """Возвращает текст, отображённый на кнопке по уровню переданной характеристики"""
-        if stat_lvl == 3:
-            return "MAX"
-        return str(stat_lvl)
-
-    def show_shop(self):
+    def create_buttons(self):
         def skip():
             pass
 
@@ -109,29 +137,42 @@ class Shop:
                                  HEIGHT / 2.3 + 100,
                                  skip())
         button_back = Button(self.display, "Back", 30, WIDTH / 2, HEIGHT / 2.3 + 200, skip())
+
+        return button_power, button_shield, button_atkspeed, button_back
+
+    def lvl_text(self, stat_lvl):
+        """Возвращает текст, отображённый на кнопке по уровню переданной характеристики"""
+        if stat_lvl == 3:
+            return "MAX"
+        return str(stat_lvl)
+
+    def draw_main_window(self):
+        """Прорисовывает основное окно магазина"""
+        self.display.blit(background, background_rect)
+        draw_text(self.display, "Shop", 64, WIDTH / 2, HEIGHT / 10)
+        draw_text(self.display, "Your money >> " + str(self.player.money), 28, WIDTH / 2, HEIGHT - 50)
+        draw_text(self.display, "Info:", 35, WIDTH / 2 + 100, HEIGHT / 2.3 - 110)
+        outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 100, 220, 70)
+        pygame.draw.rect(self.display, WHITE, outline_rect, 3)
+        outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 30, 220, 30)
+        pygame.draw.rect(self.display, WHITE, outline_rect, 3)
+
+    def show_shop(self):
+
+        button_power, button_shield, button_atkspeed, button_back = self.create_buttons()
         all_buttons = (button_power, button_shield, button_atkspeed, button_back)
 
         waiting = True
         current_button = 0
         while waiting:
             self.clock.tick(FPS)
-
-            self.display.blit(background, background_rect)
-            draw_text(self.display, "Shop", 64, WIDTH / 2, HEIGHT / 10)
-            draw_text(self.display, "Your money >> " + str(self.player.money), 28, WIDTH / 2, HEIGHT - 50)
-            draw_text(self.display, "Info:", 35, WIDTH / 2 + 100, HEIGHT / 2.3 - 110)
-            outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 100, 220, 70)
-            pygame.draw.rect(self.display, WHITE, outline_rect, 3)
-            outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 30, 220, 30)
-            pygame.draw.rect(self.display, WHITE, outline_rect, 3)
+            self.draw_main_window()
 
             power_cost = 50 * self.player.Power_lvl
             shield_cost = 50 * self.player.Shield_lvl
             atkspeed_cost = 50 * self.player.Atkspeed_lvl
 
-            for i in range(len(all_buttons)):
-                if i != current_button:
-                    all_buttons[i].active = False
+            button_reset(all_buttons, current_button)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
