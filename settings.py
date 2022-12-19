@@ -28,12 +28,3 @@ config_path = os.path.join(application_path, config_name)
 IMG_DIR = os.path.join(application_path, 'img')
 DATA_DIR = os.path.join(application_path, 'data')
 SOUND_DIR = os.path.join(application_path, 'snd')
-
-#  Importing files
-with open(os.path.join(DATA_DIR, 'sound.txt')) as sound_file:
-    all_sound_state = sound_file.readlines()
-    sound_state = int(all_sound_state[0].split()[1])
-    music_state = int(all_sound_state[1].split()[1])
-
-with open(os.path.join(DATA_DIR, 'highscore.txt')) as highscore_file:
-    highscore = int(highscore_file.read())
