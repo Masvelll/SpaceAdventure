@@ -170,6 +170,11 @@ class GameOverScreen(Menu):
 
         self.game = game
 
+    def write_money(self):
+        money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'w')
+        money_file.write(str(self.player.money))
+        money_file.close()
+
     def show_game_over_screen(self):
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
         button1 = Button(self.display, "Play again", 40, WIDTH / 2, HEIGHT / 2 - 50, self.stop_waiting)
@@ -179,10 +184,7 @@ class GameOverScreen(Menu):
 
         added_money = int(((self.game.score // 500) ** (4 / 3)) // 2)
         self.player.money += added_money
-
-        money_file = open(os.path.join(DATA_DIR, 'money.txt'), 'w')
-        money_file.write(str(self.player.money))
-        money_file.close()
+        self.write_money()
 
         waiting = True
         cnt = 0
