@@ -3,6 +3,7 @@ import os
 from settings import HEIGHT, WIDTH, DATA_DIR, IMG_DIR
 from bullet import PlayerBullet
 import sys
+from import_data import money, stats
 
 config_name = 'myapp.cfg'
 application_path = os.path.dirname(sys.executable)
@@ -32,17 +33,11 @@ class Player(pygame.sprite.Sprite):
         self.relax = 0
         self.alive = True
 
-        money_file = open(os.path.join(DATA_DIR, 'money.txt'))
-        self.money = int(money_file.read())
-        money_file.close()
+        self.money = money
 
-        stats_file = open(os.path.join(DATA_DIR, 'stats.txt'))
-        stats = stats_file.readlines()
         self.Power_lvl = int(stats[0].split()[1])
         self.Shield_lvl = int(stats[1].split()[1])
         self.Atkspeed_lvl = int(stats[2].split()[1])
-
-        stats_file.close()
 
         self.maxshield = 100 * (1 + self.Shield_lvl / 3)
         self.shield = 100 * (1 + self.Shield_lvl / 3)
