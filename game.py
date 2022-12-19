@@ -1,5 +1,5 @@
 import pygame
-from settings import music_state, sound_state, highscore
+from import_data import music_state, sound_state, highscore
 from player import Player
 
 
@@ -30,6 +30,7 @@ class Game:
         self.enemy_bullets = pygame.sprite.Group()
         self.boss_bullets = pygame.sprite.Group()
         self.boss = pygame.sprite.Group()
+        self.powerups = pygame.sprite.Group()
     def entity_reset(self, music_manager):
         highscore = self.highscore
         score = self.score
