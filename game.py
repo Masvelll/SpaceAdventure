@@ -12,12 +12,14 @@ class Game:
         self.stage = 0
         self.limit = 5000
         self.relax = 0
+        self.score = 0
         self.last_spawn = pygame.time.get_ticks()
         self.spawn_rate = 15000
 
         self.music_state = music_state
         self.sound_state = sound_state
         self.highscore = highscore
+        self.game_over = True
         self.first_game = True
         self.music_manager = music_manager
 
@@ -28,10 +30,15 @@ class Game:
         self.enemy_bullets = pygame.sprite.Group()
         self.boss_bullets = pygame.sprite.Group()
         self.boss = pygame.sprite.Group()
-    def entity_spawn(self):
-        """Добавляет все группы спрайтов в all_sprites"""
+    def entity_reset(self, music_manager):
+        highscore = self.highscore
+        score = self.score
+        first_game = self.first_game
 
-        self.all_sprites.add(self.player)
+        self.__init__(music_manager)
+        self.first_game = first_game
+        self.score = score
+        self.highscore = highscore
 
     def next_level(self, music_manager, spawn_manager):
         """Переходит в усложнённый режим игры"""
