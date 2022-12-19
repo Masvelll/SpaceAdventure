@@ -73,3 +73,11 @@ bullet_images = {
 }
 
 enemy_bullet_img = pygame.image.load(os.path.join(IMG_DIR, "laserRed06.png"))
+
+volume_mixer = []
+for i in range(4):
+    filename = 'volume{}.png'.format(i)
+    img = pygame.image.load(os.path.join(IMG_DIR, filename))
+    img = pygame.transform.scale(img, (50, 30))
+
+    volume_mixer.append(img)
