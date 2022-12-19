@@ -1,18 +1,18 @@
 import pygame
-import random
 import os
 from player import Player
 from rendering import draw_text, draw_shield_bar, draw_energy_bar, draw_lives
 from game import Game
-from settings import sound_state, music_state, WIDTH, HEIGHT, FPS, BLACK, DATA_DIR
-from images import explosion_anim, background_rect, background, powerup_images, heart_mini_img
+from settings import WIDTH, HEIGHT, FPS, BLACK, DATA_DIR
+from import_data import sound_state, music_state
+from images import background_rect, background, heart_mini_img
 from music_manager import MusicManager
 from spawn_manager import SpawnManager
 from menus import Shop, MainMenu, Pause, GameOverScreen, Settings
+from collision_manager import CollisionManager
 
 import logging
 from logging import config
-
 log_config = {
     "version": 1,
     "root": {
@@ -38,65 +38,20 @@ logger = logging.getLogger(__name__)
 
 pygame.init()
 pygame.mixer.init()  # это для звука (на будущее)
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # почему некоторые пишут screen, а некоторые surface?
 display = pygame.Surface((WIDTH, HEIGHT))
-pygame.display.set_caption("Space Adventure")  # лень придумывать название
+pygame.display.set_caption("Space Adventure")
 clock = pygame.time.Clock()
-
-
-# Класс апгрейдов
-class Pow(pygame.sprite.Sprite):
-    def __init__(self, center):
-        pygame.sprite.Sprite.__init__(self)
-        self.type = random.choice(['shield', 'gun'])
-        self.image = powerup_images[self.type]
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect()
-        self.rect.center = center
-        self.speedy = 2
-
-    def update(self):
-        self.rect.y += self.speedy
-
-        if self.rect.top > HEIGHT:
-            self.kill()
-
-
-# Класс врывов
-class Explosion(pygame.sprite.Sprite):
-    def __init__(self, center, size):
-        pygame.sprite.Sprite.__init__(self)
-        self.size = size
-        self.image = explosion_anim[self.size][0]
-        self.rect = self.image.get_rect()
-        self.rect.center = center
-        self.frame = 0
-        self.last_update = pygame.time.get_ticks()
-        self.frame_rate = 50
-
-    def update(self):
-        now = pygame.time.get_ticks()
-        if now - self.last_update > self.frame_rate:
-            self.last_update = now
-            self.frame += 1
-            if self.frame == len(explosion_anim[self.size]):
-                self.kill()
-            else:
-                center = self.rect.center
-                self.image = explosion_anim[self.size][self.frame]
-                self.rect = self.image.get_rect()
-                self.rect.center = center
 
 
 # Функция для вывода текста (можно не париться, создавая отдельные label)
 font_name = pygame.font.match_font('droidsans')
-music_manager = MusicManager()
 
-# Добавление основных групп
-powerups = pygame.sprite.Group()
 
 # Процесс игры
 
+music_manager = MusicManager()
 game = Game(music_manager)
 spawn_manager = SpawnManager(game)
 running = True
@@ -110,6 +65,7 @@ while running:
         pygame.mixer.music.set_volume(music_state / 3)
 
         player = Player(game.all_sprites, game.bullets, music_manager)
+        collision_manager = CollisionManager(player, game, spawn_manager, music_manager)
         main_menu = MainMenu(display, clock)
         shop = Shop(display, clock, player)
         pause = Pause(display, clock, game)
@@ -159,38 +115,10 @@ while running:
         spawn_manager.boss_here = True
         spawn_manager.spawn_boss(game)
 
-    # Проверка коллайда "игрок - моб"
-    hits = pygame.sprite.spritecollide(player, game.mobs, True, pygame.sprite.collide_circle)
-    for hit in hits:
-        player.shield -= hit.radius * 2
-        expl = Explosion(hit.rect.center, 'sm')
-        game.all_sprites.add(expl)
-        spawn_manager.newmob(game)
-        if player.shield <= 0:
-            death_explosion = Explosion(player.rect.center, 'player')
-            game.all_sprites.add(death_explosion)
-            player.hide()
-            player.lives -= 1
-            player.shield = player.maxshield
-            music_manager.fart_sound.play()
-        if player.lives == 0:
-            player.alive = False
-            player.shield = 0
-
-    # Обработка апгрейдов
-    hits = pygame.sprite.spritecollide(player, powerups, True)
-    for hit in hits:
-        if hit.type == 'shield':
-            player.shield += random.randrange(10, 30)
-            if player.shield >= player.maxshield:
-                player.shield = player.maxshield
-            music_manager.shield_sound.play()
-        if hit.type == 'gun':
-            player.powerup()
-            music_manager.power_sound.play()
+    collision_manager.process_all_collisions()
 
     # Проверка смерти игрока и анимации его смерти
-    if not player.alive and not death_explosion.alive():
+    if not player.alive and not collision_manager.death_explosion.alive():
 
         if game.score > game.highscore:
             game.highscore = game.score
@@ -199,152 +127,6 @@ while running:
             highscore_file.close()
 
         game.game_over = True
-
-    # Проверка коллайда "моб - пуля"
-    hits = pygame.sprite.groupcollide(game.mobs, game.bullets, False, True)
-    # logger.debug(hits)
-    for hit in hits:
-        hit.lives -= 1
-        if hit.lives > 0:
-            random.choice(music_manager.expl_sounds).play()
-            expl_center = (hit.rect.center[0], hit.rect.bottom)
-            expl = Explosion(expl_center, 'sm')
-            game.all_sprites.add(expl)
-        else:
-            hit.kill()
-            game.score += 50 + hit.radius  # Очки считаются от радиуса
-            random.choice(music_manager.expl_sounds).play()
-            expl = Explosion(hit.rect.center, 'lg')
-            game.all_sprites.add(expl)
-            if random.random() > 0.9 + player.power / 170 - 0.01:
-                pov = Pow(hit.rect.center)
-                game.all_sprites.add(pov)
-                powerups.add(pov)
-            spawn_manager.newmob(game)
-
-    # Проверка коллайда "БОСС - пуля"
-    hits = pygame.sprite.groupcollide(game.boss, game.bullets, False, True, pygame.sprite.collide_circle)
-    # logger.debug(hits)
-    if hits:
-        for hit in list(hits.values())[0]:
-            hit_obj = [x for x in hits.keys()][0]
-
-            hit_obj.lives -= 1
-            if hit_obj.lives > 0:
-                random.choice(music_manager.expl_sounds).play()
-                expl_center = (hit.rect.center[0], hit.rect.center[1])
-                expl = Explosion(expl_center, 'sm')
-                game.all_sprites.add(expl)
-            else:
-                hit.kill()
-                game.score += 5000 + hit.radius  # Очки считаются от радиуса
-                random.choice(music_manager.expl_sounds).play()
-                expl = Explosion(hit.rect.center, 'lg')
-                game.all_sprites.add(expl)
-                if random.random() > 0.9 + player.power / 170 - 0.01:
-                    pov = Pow(hit.rect.center)
-                    game.all_sprites.add(pov)
-                    powerups.add(pov)
-                spawn_manager.newmob(game)
-            hit.kill()
-
-        # Проверка коллайда "БОСС - пуля"
-        hits = pygame.sprite.groupcollide(game.boss, game.bullets, False, True, pygame.sprite.collide_circle)
-        # logger.debug(hits)
-        if hits:
-            for hit in list(hits.values())[0]:
-                hit_obj = [x for x in hits.keys()][0]
-
-                hit_obj.lives -= 1
-                if hit_obj.lives > 0:
-                    random.choice(music_manager.expl_sounds).play()
-                    expl_center = (hit.rect.center[0], hit.rect.center[1])
-                    expl = Explosion(expl_center, 'sm')
-                    game.all_sprites.add(expl)
-                else:
-                    hit.kill()
-                    game.score += 5000 + hit.radius  # Очки считаются от радиуса
-                    random.choice(music_manager.expl_sounds).play()
-                    expl = Explosion(hit.rect.center, 'lg')
-                    game.all_sprites.add(expl)
-                    if random.random() > 0.9 + player.power / 170 - 0.01:
-                        pov = Pow(hit.rect.center)
-                        game.all_sprites.add(pov)
-                        powerups.add(pov)
-                    spawn_manager.newmob(game)
-                hit.kill()
-
-    # Проверка коллайда "БОСС - метеорит"
-    hits = pygame.sprite.groupcollide(game.boss, game.mobs, False, True, pygame.sprite.collide_circle)
-    # logger.debug(hits)
-    if hits:
-        for hit in list(hits.values())[0]:
-            hit_obj = [x for x in hits.keys()][0]
-
-            hit_obj.lives -= 1
-            if hit_obj.lives > 0:
-                random.choice(music_manager.expl_sounds).play()
-                expl_center = (hit.rect.center[0], hit.rect.center[1])
-                expl = Explosion(expl_center, 'sm')
-                game.all_sprites.add(expl)
-            else:
-                hit.kill()
-                random.choice(music_manager.expl_sounds).play()
-                expl = Explosion(hit.rect.center, 'lg')
-                game.all_sprites.add(expl)
-            hit.kill()
-
-    # Проверка коллайда "игрок - вражеская пуля"
-    hits = pygame.sprite.spritecollide(player, game.enemy_bullets, True)
-    for hit in hits:
-        player.shield -= 50
-        expl = Explosion(hit.rect.center, 'sm')
-        game.all_sprites.add(expl)
-        spawn_manager.newmob(game)
-        if player.shield <= 0:
-            death_explosion = Explosion(player.rect.center, 'player')
-            game.all_sprites.add(death_explosion)
-            player.hide()
-            player.lives -= 1
-            player.shield = player.maxshield
-            music_manager.fart_sound.play()
-        if player.lives == 0:
-            player.alive = False
-
-        # Вжух от босса
-    hits = pygame.sprite.spritecollide(player, game.boss_bullets, True)
-    for hit in hits:
-        player.shield -= 10000
-        expl = Explosion(hit.rect.center, 'sm')
-        game.all_sprites.add(expl)
-        if player.shield <= 0:
-            death_explosion = Explosion(player.rect.center, 'player')
-            game.all_sprites.add(death_explosion)
-            player.hide()
-            player.lives -= 1
-            player.shield = player.maxshield
-            music_manager.fart_sound.play()
-        if player.lives == 0:
-            player.alive = False
-    # Проверка коллайда "пуля - враг"
-    hits = pygame.sprite.groupcollide(game.enemies, game.bullets, False, True)
-    for hit in hits:
-        hit.lives -= 1
-        if hit.lives > 0:
-            random.choice(music_manager.expl_sounds).play()
-            expl_center = (hit.rect.center[0], hit.rect.bottom)
-            expl = Explosion(expl_center, 'sm')
-            game.all_sprites.add(expl)
-        else:
-            hit.kill()
-            game.score += 500
-            random.choice(music_manager.expl_sounds).play()
-            expl = Explosion(hit.rect.center, 'lg')
-            game.all_sprites.add(expl)
-            if random.random() > 0.9 + player.power / 170 - 0.01:
-                pov = Pow(hit.rect.center)
-                game.all_sprites.add(pov)
-                powerups.add(pov)
 
     if player.power >= 4:
         pow_lev = 'MAX'
