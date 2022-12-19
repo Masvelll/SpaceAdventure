@@ -101,7 +101,6 @@ class Boss(pygame.sprite.Sprite):
             self.image = boss_shoot[self.current_shot]
             self.image = pygame.transform.scale(self.image, (200, 200))
             self.last_change_img = now
-            print("changed image", self.current_shot)
         self.charging = False
         if now - self.last_shot > self.shoot_delay - 650:
             self.charging = True
