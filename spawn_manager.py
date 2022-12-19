@@ -25,6 +25,7 @@ class SpawnManager:
         game.enemies.add(m)
 
     def spawn_boss(self, game):
+        """Создаёт босса"""
         m = Boss(game.all_sprites, game.boss_bullets)
         game.all_sprites.add(m)
         game.boss.add(m)
