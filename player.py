@@ -53,6 +53,13 @@ class Player(pygame.sprite.Sprite):
         self.music_manager = music_manager
         self.all_sprites = all_sprites
 
+    def update_parameters(self):
+        """Обновляет зарактеристики игрока"""
+        self.maxshield = 100 * (1 + self.Shield_lvl / 3)
+        self.shield = 100 * (1 + self.Shield_lvl / 3)
+        self.power = self.Power_lvl
+        self.shoot_delay = 250 * (1 - (self.Atkspeed_lvl - 1) / 5)
+
     def update(self):
         self.speedx = 0
         self.speedy = 0
