@@ -11,7 +11,7 @@ class Button:
         :param size: размер шрифта текста
         :param x: координата центра по х
         :param y: координата центра по у
-        :param input_function: функция, которую вызывает кнопка при нажатии
+        :param callback: функция, которую вызывает кнопка при нажатии
         """
 
         self.active = False
@@ -59,6 +59,7 @@ def button_check(current_button, button_amount, all_buttons):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            exit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
                 current_button = (current_button + 1) % button_amount
@@ -75,6 +76,3 @@ def button_update(all_buttons):
     for but in all_buttons:
         but.update()
         but.surf.blit(but.text_surface, but.rect)
-
-
-
