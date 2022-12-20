@@ -10,7 +10,7 @@ class CollisionManager:
         self.game = game
         self.spawn_manager = spawn_manager
         self.music_manager = music_manager
-        self.death_explosion = None
+        self.death_explosion = Explosion(player.rect.center, 'player')
 
     def player_mob(self):
         hits = pygame.sprite.spritecollide(self.player, self.game.mobs, True, pygame.sprite.collide_circle)
@@ -97,6 +97,7 @@ class CollisionManager:
                     expl = Explosion(hit.rect.center, 'lg')
                     self.game.all_sprites.add(expl)
                 hit.kill()
+                self.spawn_manager.newmob(self.game)
 
     def player_enemy_bullet(self):
         hits = pygame.sprite.spritecollide(self.player, self.game.enemy_bullets, True)
