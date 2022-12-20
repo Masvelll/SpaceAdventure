@@ -1,6 +1,7 @@
 from settings import DATA_DIR
 import os
 
+'''импорт денег'''
 try:
     money_file = open(os.path.join(DATA_DIR, 'money.txt'))
 except FileNotFoundError:
@@ -11,6 +12,7 @@ except FileNotFoundError:
 money = int(money_file.read())
 money_file.close()
 
+'''импорт характеристик игрока'''
 try:
     stats_file = open(os.path.join(DATA_DIR, 'stats.txt'))
 except FileNotFoundError:
@@ -18,6 +20,7 @@ except FileNotFoundError:
     stats_file.write("Power_lvl 1 \nShield_lvl 1 \nAtk_speed_lvl 1")
     stats_file = open(os.path.join(DATA_DIR, 'stats.txt'))
 
+'''импорт настроек звука'''
 try:
     with open(os.path.join(DATA_DIR, 'sound.txt')) as sound_file:
         all_sound_state = sound_file.readlines()
@@ -29,6 +32,7 @@ except FileNotFoundError:
         sound_state = 1
         music_state = 1
 
+'''импорт highscore'''
 try:
     with open(os.path.join(DATA_DIR, 'highscore.txt')) as highscore_file:
         highscore = int(highscore_file.read())
