@@ -5,11 +5,15 @@ from settings import IMG_DIR, BLACK, WIDTH, HEIGHT
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
+# Импорт фона
 background = pygame.image.load(os.path.join(IMG_DIR, 'starfield.png'))
 background_rect = background.get_rect()
+
+# Импорт картинки игрока
 player_img = pygame.image.load(os.path.join(IMG_DIR, "playerShip2_green.png"))
 pygame.display.set_icon(player_img)
 
+# Импорт картинок метеоритов
 meteor_images = []
 meteor_list = ['meteorBrown_big1.png', 'meteorBrown_med1.png',
                'meteorBrown_med1.png', 'meteorBrown_med3.png',
@@ -18,24 +22,34 @@ meteor_list = ['meteorBrown_big1.png', 'meteorBrown_med1.png',
 for img in meteor_list:
     meteor_images.append(pygame.image.load(os.path.join(IMG_DIR, img)).convert())
 
+# Импорт картинок маленького кораблика и БОССА
 enemy_img = pygame.image.load(os.path.join(IMG_DIR, "playerShip1_red.png"))
 boss_img = pygame.image.load(os.path.join(IMG_DIR, "BOSS 1.png"))
 
-boss_shoot = []
-for i in range(11):
-    filename = ''
-    filename = 'BOSS {}.png'.format(i+1)
-    img = pygame.image.load(os.path.join(IMG_DIR, filename))
-    img.set_colorkey(BLACK)
-    boss_shoot.append(img)
+# Импорт картинок сердец
+heart_img = pygame.image.load(os.path.join(IMG_DIR, 'heart.png')).convert()
+heart_mini_img = pygame.transform.scale(heart_img, (25, 25))
+heart_mini_img.set_colorkey(BLACK)
 
+# Импорт картинок картинок апгрейдов
+powerup_images = {
+    'shield': pygame.image.load(os.path.join(IMG_DIR, 'shield_gold.png')),
+    'gun': pygame.image.load(os.path.join(IMG_DIR, 'bolt_gold.png'))
+}
 
+# Импорт картинок картинок пуль
+bullet_images = {
+    'lg': pygame.image.load(os.path.join(IMG_DIR, "laserGreen10.png")),
+    'sm': pygame.image.load(os.path.join(IMG_DIR, "laserGreen13.png"))
+}
+enemy_bullet_img = pygame.image.load(os.path.join(IMG_DIR, "laserRed06.png"))
+
+# Анимация взрыва
 explosion_anim = {
     'lg': [],
     'sm': [],
     'player': []
 }
-
 for i in range(9):
     filename = 'regularExplosion0{}.png'.format(i)
     img = pygame.image.load(os.path.join(IMG_DIR, filename))
@@ -49,31 +63,23 @@ for i in range(9):
     img.set_colorkey(BLACK)
     explosion_anim['player'].append(img)
 
+# Анимация выстрела БОССА
+boss_shoot = []
+for i in range(11):
+    filename = ''
+    filename = 'BOSS {}.png'.format(i + 1)
+    img = pygame.image.load(os.path.join(IMG_DIR, filename))
+    img.set_colorkey(BLACK)
+    boss_shoot.append(img)
 boss_bullet_anim = []
 for i in range(5):
     filename = ''
-    filename = 'Lazer{}.png'.format(i+1)
+    filename = 'Lazer{}.png'.format(i + 1)
     img = pygame.image.load(os.path.join(IMG_DIR, filename))
     img.set_colorkey(BLACK)
     boss_bullet_anim.append(img)
 
-heart_img = pygame.image.load(os.path.join(IMG_DIR, 'heart.png')).convert()
-heart_mini_img = pygame.transform.scale(heart_img, (25, 25))
-heart_mini_img.set_colorkey(BLACK)
-
-powerup_images = {
-    'shield': pygame.image.load(os.path.join(IMG_DIR, 'shield_gold.png')),
-    'gun': pygame.image.load(os.path.join(IMG_DIR, 'bolt_gold.png'))
-
-}
-
-bullet_images = {
-    'lg': pygame.image.load(os.path.join(IMG_DIR, "laserGreen10.png")),
-    'sm': pygame.image.load(os.path.join(IMG_DIR, "laserGreen13.png"))
-}
-
-enemy_bullet_img = pygame.image.load(os.path.join(IMG_DIR, "laserRed06.png"))
-
+# Картинки громкости звука
 volume_mixer = []
 for i in range(4):
     filename = 'volume{}.png'.format(i)
