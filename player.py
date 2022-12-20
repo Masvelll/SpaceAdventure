@@ -33,6 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.power_time = pygame.time.get_ticks()
         self.relax = 0
         self.alive = True
+        self.death_time = 0
 
         self.money = money
 
@@ -131,6 +132,7 @@ class Player(pygame.sprite.Sprite):
 
     def check_death(self):
         """Проверят мёртв ли игрок и создаёт взрыв"""
+        self.death_time = pygame.time.get_ticks()
         if self.shield <= 0:
             death_explosion = Explosion(self.rect.center, 'player')
             self.all_sprites.add(death_explosion)
@@ -142,9 +144,10 @@ class Player(pygame.sprite.Sprite):
             self.alive = False
 
     def hide(self):
+        """Прятяет игрока на время смерти"""
         self.hidden = True
         self.hide_timer = pygame.time.get_ticks()
-        self.rect.center = (WIDTH / 2, -2000)  # Телепортируем на время смерти
+        self.rect.center = (WIDTH / 2, -2000)
 
     def powerup(self):
         self.power += 1

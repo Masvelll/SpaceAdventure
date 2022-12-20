@@ -115,7 +115,8 @@ def main():
         collision_manager.process_all_collisions()
 
         # Проверка смерти игрока и анимации его смерти
-        if not player.alive and not collision_manager.death_explosion.alive():
+        if not player.alive and not collision_manager.death_explosion.alive() \
+                and pygame.time.get_ticks() - player.death_time > 1000:
 
             if game.score > game.highscore:
                 game.highscore = game.score
