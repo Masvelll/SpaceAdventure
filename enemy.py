@@ -6,6 +6,7 @@ from settings import WIDTH
 
 
 class Enemy(pygame.sprite.Sprite):
+    """Класс маленьких вражеских корабликов"""
     def __init__(self, all_sprites, enemy_bullets):
         pygame.sprite.Sprite.__init__(self)
         self.image = enemy_img
@@ -46,6 +47,7 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class Boss(pygame.sprite.Sprite):
+    """Класс БОССА"""
     def __init__(self, all_sprites, boss_bullets):
         pygame.sprite.Sprite.__init__(self)
         self.image = boss_img
