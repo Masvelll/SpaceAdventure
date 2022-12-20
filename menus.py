@@ -172,6 +172,7 @@ class GameOverScreen(Menu):
         self.show_settings = show_settings
         self.show_shop = show_shop
 
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.game = game
 
     def write_money(self):
@@ -179,8 +180,18 @@ class GameOverScreen(Menu):
         money_file.write(str(self.player.money))
         money_file.close()
 
+    def play_again(self):
+        self.screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
+        self.waiting = False
+
+    def back_to_menu(self):
+        self.show_menu(self.show_shop, self.show_settings, self.game.highscore)
+        self.display.blit(background, background_rect)
+        pygame.display.flip()
+        self.waiting = False
+
     def show_game_over_screen(self):
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         button1 = Button(self.display, "Play again", 40, WIDTH / 2, HEIGHT / 2 - 50, self.stop_waiting)
         button2 = Button(self.display, "Back to menu", 40, WIDTH / 2, HEIGHT / 2 + 50, self.show_menu)
         button3 = Button(self.display, "Exit", 40, WIDTH / 2, HEIGHT / 2 + 150, self.menu_exit)
@@ -190,9 +201,10 @@ class GameOverScreen(Menu):
         self.player.money += added_money
         self.write_money()
 
-        waiting = True
-        cnt = 0
-        while waiting:
+        self.waiting = True
+        current_button = 0
+        button_amount = len(all_buttons)
+        while self.waiting:
             self.clock.tick(FPS)
 
             self.display.blit(background, background_rect)
@@ -200,36 +212,28 @@ class GameOverScreen(Menu):
             draw_text(self.display, "You got {} money!".format(added_money), 30, WIDTH / 2, HEIGHT / 10 + 120)
             draw_text(self.display, "Your score >> " + str(self.game.score), 28, WIDTH / 2, HEIGHT - 50)
 
-            for i in range(len(all_buttons)):
-                if i != cnt:
-                    all_buttons[i].active = False
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DOWN:
-                        cnt = (cnt + 1) % 3
+                        current_button = (current_button + 1) % button_amount
                     if event.key == pygame.K_UP:
-                        cnt = (cnt - 1) % 3
+                        current_button = (current_button - 1) % button_amount
 
                     if event.key == pygame.K_RETURN:
-                        if cnt == 0:
-                            screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
-                            waiting = False
-                        if cnt == 1:
-                            self.show_menu(self.show_shop, self.show_settings, self.game.highscore)
-                            self.display.blit(background, background_rect)
-                            pygame.display.flip()
-                            waiting = False
-                        if cnt == 2:
-                            pygame.quit()
-                            exit()
+                        if current_button == 0:
+                            self.play_again()
+                        if current_button == 1:
+                            self.back_to_menu()
+                        if current_button == 2:
+                            self.menu_exit()
 
-            all_buttons[cnt].active = True
+            button_reset(all_buttons, current_button)
+            all_buttons[current_button].active = True
             button_update(all_buttons)
 
-            screen.blit(pygame.transform.scale(self.display, (WIDTH, HEIGHT)), (0, 0))
+            self.screen.blit(pygame.transform.scale(self.display, (WIDTH, HEIGHT)), (0, 0))
             pygame.display.flip()
 
 
@@ -240,10 +244,12 @@ class Pause(Menu):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     def stop_waiting(self):
+        """Функция для callback кнопки continue"""
         self.screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
         self.waiting = False
 
     def give_up(self):
+        """Функция для callback кнопки give up"""
         self.game.game_over = True
         self.waiting = False
 
@@ -356,7 +362,7 @@ class Shop(Menu):
 
         button_power = Button(self.display, "Power lvl " + self.lvl_text(self.player.Power_lvl), 30, WIDTH / 2,
                               HEIGHT / 2.3 - 100,
-                              skip())
+                              skip)
         button_shield = Button(self.display, "Shield lvl " + self.lvl_text(self.player.Shield_lvl), 30, WIDTH / 2,
                                HEIGHT / 2.3, skip())
         button_atkspeed = Button(self.display, "Atk Speed lvl " + self.lvl_text(self.player.Atkspeed_lvl), 30,
