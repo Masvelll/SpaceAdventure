@@ -48,7 +48,7 @@ class Enemy(pygame.sprite.Sprite):
 
 class Boss(pygame.sprite.Sprite):
     """Класс БОССА"""
-    def __init__(self, all_sprites, boss_bullets):
+    def __init__(self, all_sprites, boss_bullets, music_manager):
         pygame.sprite.Sprite.__init__(self)
         self.image = boss_img
         self.image = pygame.transform.scale(self.image, (200, 200))
@@ -72,6 +72,7 @@ class Boss(pygame.sprite.Sprite):
 
         self.state = 0
         self.time_appear = pygame.time.get_ticks()
+        self.music_manager = music_manager
 
     def update(self):
         if self.state < 3:
@@ -95,7 +96,7 @@ class Boss(pygame.sprite.Sprite):
             laser = BossBullet(self.rect.centerx + 5, self.rect.bottom - 70)
             self.all_sprites.add(boss_bullet, laser)
             self.boss_bullets.add(boss_bullet)
-
+            self.music_manager.laser_sound.play()
     def charge(self):
         now = pygame.time.get_ticks()
         if now - self.last_change_img > 50 and self.charging:

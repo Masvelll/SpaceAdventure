@@ -6,7 +6,7 @@ from enemy import Enemy, Boss
 class SpawnManager:
     def __init__(self, game):
         self.game = game
-        self.music_changer = MusicManager()
+        self.music_manager = MusicManager()
         self.stop = False
         self.boss_here = False
 
@@ -24,9 +24,8 @@ class SpawnManager:
         game.all_sprites.add(m)
         game.enemies.add(m)
 
-    @staticmethod
-    def spawn_boss(game):
+    def spawn_boss(self, game):
         """Создаёт босса"""
-        m = Boss(game.all_sprites, game.boss_bullets)
+        m = Boss(game.all_sprites, game.boss_bullets, self.music_manager)
         game.all_sprites.add(m)
         game.boss.add(m)
