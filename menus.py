@@ -83,12 +83,12 @@ class Settings(Menu):
         """Уменьшает громкость звука или музыка"""
         if current_button == 0:
             self.sound_state -= 1
-            if self.sound_state > 3:
-                self.sound_state = 3
+            if self.sound_state < 0:
+                self.sound_state = 0
         if current_button == 1:
             self.music_state -= 1
-            if self.music_state > 3:
-                self.music_state = 3
+            if self.music_state < 0:
+                self.music_state = 0
 
     def write_sound(self):
         """Загружает данные в файл"""
