@@ -95,7 +95,7 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                pause.show_pause(settings.show_settings, game_over_screen.show_game_over_screen)
+                pause.show_pause(settings.show_settings)
 
         if event.type == pygame.KEYUP:
             pass

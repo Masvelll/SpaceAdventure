@@ -65,26 +65,62 @@ class Settings(Menu):
         super().__init__(display, clock)
         self.game = game
         self.music_manager = music_manager
+        self.sound_state = self.game.sound_state
+        self.music_state = self.game.music_state
+
+    def sound_increase(self, current_button):
+        """Увеичвает громкость звука или музыки"""
+        if current_button == 0:
+            self.sound_state += 1
+            if self.sound_state > 3:
+                self.sound_state = 3
+        if current_button == 1:
+            self.music_state += 1
+            if self.music_state > 3:
+                self.music_state = 3
+
+    def sound_decrease(self, current_button):
+        """Уменьшает громкость звука или музыка"""
+        if current_button == 0:
+            self.sound_state -= 1
+            if self.sound_state > 3:
+                self.sound_state = 3
+        if current_button == 1:
+            self.music_state -= 1
+            if self.music_state > 3:
+                self.music_state = 3
+
+    def write_sound(self):
+        """Загружает данные в файл"""
+        sound_file = open(os.path.join(DATA_DIR, 'sound.txt'), 'w')
+        sound_file.write('Sound_state {}\n'.format(self.sound_state))
+        sound_file.write('Music_state {}\n'.format(self.music_state))
+        sound_file.close()
+
+    def set_sound(self):
+        """Ставит громкость игры так же, как у показателей"""
+        self.game.sound_state = self.sound_state
+        self.game.music_state = self.music_state
+
+        for snd in self.music_manager.all_sounds:
+            snd.set_volume(self.sound_state / 3)
+        pygame.mixer.music.set_volume(self.music_state / 3)
 
     def show_settings(self):
         def skip():
             pass
 
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        button1 = Button(self.display, "Sound", 40, WIDTH / 2, HEIGHT / 2 - 100, skip)
-        button2 = Button(self.display, "Music", 40, WIDTH / 2, HEIGHT / 2, skip)
-        button3 = Button(self.display, "Back", 40, WIDTH / 2, HEIGHT / 2 + 100, skip)
-        all_buttons = (button1, button2, button3)
+        button_sound = Button(self.display, "Sound", 40, WIDTH / 2, HEIGHT / 2 - 100, skip)
+        button_music = Button(self.display, "Music", 40, WIDTH / 2, HEIGHT / 2, skip)
+        button_back = Button(self.display, "Back", 40, WIDTH / 2, HEIGHT / 2 + 100, skip)
+        all_buttons = (button_sound, button_music, button_back)
 
-        state1 = self.game.sound_state
-        state2 = self.game.music_state
-
-        mixer1 = Mixer(WIDTH / 2 + 100, HEIGHT / 2 - 95, state1)
-        mixer2 = Mixer(WIDTH / 2 + 100, HEIGHT / 2 + 5, state2)
-        all_mixers = (mixer1, mixer2)
+        mixer_sound = Mixer(WIDTH / 2 + 100, HEIGHT / 2 - 95, self.sound_state)
+        mixer_music = Mixer(WIDTH / 2 + 100, HEIGHT / 2 + 5, self.music_state)
         mixers = pygame.sprite.Group()
-        mixers.add(mixer1)
-        mixers.add(mixer2)
+        mixers.add(mixer_sound)
+        mixers.add(mixer_music)
 
         waiting = True
         current_button = 0
@@ -94,9 +130,7 @@ class Settings(Menu):
             self.display.blit(background, background_rect)
             draw_text(self.display, "Settings", 64, WIDTH / 2, HEIGHT / 10)
 
-            for i in range(len(all_buttons)):
-                if i != current_button:
-                    all_buttons[i].active = False
+            button_reset(all_buttons, current_button)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -111,48 +145,18 @@ class Settings(Menu):
                         if current_button == 2:
                             waiting = False
                     if event.key == pygame.K_RIGHT:
-                        if current_button == 0:
-                            state1 += 1
-                            if state1 > 3:
-                                state1 = 3
-                        if current_button == 1:
-                            state2 += 1
-                            if state2 > 3:
-                                state2 = 3
+                        self.sound_increase(current_button)
                     if event.key == pygame.K_LEFT:
-                        if current_button == 0:
-                            state1 -= 1
-                            if state1 < 0:
-                                state1 = 0
-                        if current_button == 1:
-                            state2 -= 1
-                            if state2 < 0:
-                                state2 = 0
+                        self.sound_decrease(current_button)
 
             all_buttons[current_button].active = True
-            for but in all_buttons:
-                but.update()
-                but.surf.blit(but.text_surface, but.rect)
+            button_update(all_buttons)
 
-            mixer1.state = state1
-            mixer2.state = state2
-            self.game.sound_state = state1
-            self.game.music_state = state2
+            mixer_sound.state = self.sound_state
+            mixer_music.state = self.music_state
+            self.set_sound()
 
-            # Загрузка данных в файл для сохранения
-            sound_file = open(os.path.join(DATA_DIR, 'sound.txt'), 'w')
-            sound_file.write('Sound_state {}\n'.format(state1))
-            sound_file.write('Music_state {}\n'.format(state2))
-            # Sound_state = All_sound_state[0].split()[1]
-            # Music_state = All_sound_state[1].split()[1]
-            sound_file.close()
-
-            for snd in self.music_manager.all_sounds:
-                snd.set_volume(state1 / 3)
-            pygame.mixer.music.set_volume(state2 / 3)
-
-            for m in all_mixers:
-                m.update()
+            mixers.update()
             mixers.draw(self.display)
 
             screen.blit(pygame.transform.scale(self.display, (WIDTH, HEIGHT)), (0, 0))
@@ -223,9 +227,7 @@ class GameOverScreen(Menu):
                             exit()
 
             all_buttons[cnt].active = True
-            for but in all_buttons:
-                but.update()
-                but.surf.blit(but.text_surface, but.rect)
+            button_update(all_buttons)
 
             screen.blit(pygame.transform.scale(self.display, (WIDTH, HEIGHT)), (0, 0))
             pygame.display.flip()
@@ -235,16 +237,26 @@ class Pause(Menu):
     def __init__(self, display, clock, game):
         super().__init__(display, clock)
         self.game = game
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-    def show_pause(self, show_settings, show_game_over_screen):
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    def stop_waiting(self):
+        self.screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
+        self.waiting = False
+
+    def give_up(self):
+        self.game.game_over = True
+        self.waiting = False
+
+    def show_pause(self, show_settings):
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.flip()
 
-        button1 = Button(self.display, "Continue", 40, WIDTH / 2, HEIGHT / 2.5 - 100, super().stop_waiting)
+        button1 = Button(self.display, "Continue", 40, WIDTH / 2, HEIGHT / 2.5 - 100, self.stop_waiting)
         button2 = Button(self.display, "Settings", 40, WIDTH / 2, HEIGHT / 2.5, show_settings)
-        button3 = Button(self.display, "Give up", 40, WIDTH / 2, HEIGHT / 2.5 + 100, show_game_over_screen)
+        button3 = Button(self.display, "Give up", 40, WIDTH / 2, HEIGHT / 2.5 + 100, self.give_up)
         button4 = Button(self.display, "Exit", 40, WIDTH / 2, HEIGHT / 2.5 + 200, super().menu_exit)
         all_buttons = (button1, button2, button3, button4)
+        button_amount = len(all_buttons)
 
         self.waiting = True
         current_button = 0
@@ -256,37 +268,14 @@ class Pause(Menu):
 
             button_reset(all_buttons, current_button)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_DOWN:
-                        current_button = (current_button + 1) % 4
-                    if event.key == pygame.K_UP:
-                        current_button = (current_button - 1) % 4
-                    if event.key == pygame.K_ESCAPE:
-                        self.waiting = False
-
-                    if event.key == pygame.K_RETURN:
-                        if current_button == 0:
-                            screen = pygame.display.set_mode((WIDTH * 1.2, HEIGHT * 1.2))
-                            self.waiting = False
-                        if current_button == 1:
-                            show_settings()
-                        if current_button == 2:
-                            self.game.game_over = True
-                            # show_game_over_screen()
-                            self.waiting = False
-                        if current_button == 3:
-                            pygame.quit()
-                            exit()
+            current_button = button_check(current_button, button_amount, all_buttons)
 
             all_buttons[current_button].active = True
             for but in all_buttons:
                 but.update()
                 but.surf.blit(but.text_surface, but.rect)
 
-            screen.blit(pygame.transform.scale(self.display, (WIDTH, HEIGHT)), (0, 0))
+            self.screen.blit(pygame.transform.scale(self.display, (WIDTH, HEIGHT)), (0, 0))
             pygame.display.flip()
 
 
@@ -395,7 +384,6 @@ class Shop(Menu):
         pygame.draw.rect(self.display, WHITE, outline_rect, 3)
         outline_rect = pygame.Rect(WIDTH / 2 - 10, HEIGHT / 2 - 30, 220, 30)
         pygame.draw.rect(self.display, WHITE, outline_rect, 3)
-
 
     def show_shop(self):
 
