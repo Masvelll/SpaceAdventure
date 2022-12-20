@@ -4,7 +4,7 @@ import random
 
 
 class CollisionManager:
-
+    """Класс столкновений объектов"""
     def __init__(self, player, game, spawn_manager, music_manager):
         self.player = player
         self.game = game
