@@ -55,7 +55,7 @@ class Player(pygame.sprite.Sprite):
         self.power = self.Power_lvl
         self.shoot_delay = 250 * (1 - (self.Atkspeed_lvl - 1) / 5)
 
-    def update(self):
+    def move(self):
         self.speedx = 0
         self.speedy = 0
         keystate = pygame.key.get_pressed()  # Штука несёт зажатие каждой из клавиш
@@ -73,6 +73,8 @@ class Player(pygame.sprite.Sprite):
             self.speedy = 8
         self.rect.y += self.speedy
 
+    def restore_position(self):
+        """Восстанавливает позицию при попытке выйти за экран"""
         if self.rect.right > WIDTH:
             self.rect.right = WIDTH
         if self.rect.left < 0:
@@ -83,6 +85,10 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom < 35 and not self.hidden:
             self.rect.bottom = 35
 
+    def update(self):
+
+        self.move()
+        self.restore_position()
         if self.hidden and pygame.time.get_ticks() - self.hide_timer > 1000:
             self.hidden = False
             self.rect.centerx = WIDTH / 2
@@ -103,43 +109,24 @@ class Player(pygame.sprite.Sprite):
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             if self.power == 1:
-                bullet = PlayerBullet(self.rect.centerx, self.rect.top, 'lg')
+                bullet_group = (PlayerBullet(self.rect.centerx, self.rect.top, 'lg'))
+
+            if self.power == 2:
+                bullet_group = (PlayerBullet(self.rect.left, self.rect.centery, 'lg'),
+                                PlayerBullet(self.rect.right, self.rect.centery, 'lg'))
+            if self.power == 3:
+                bullet_group = (PlayerBullet(self.rect.centerx, self.rect.top, 'lg'),
+                                PlayerBullet(self.rect.right, self.rect.centery, 'sm'),
+                                PlayerBullet(self.rect.left, self.rect.centery, 'sm'))
+            if self.power >= 4:
+                bullet_group = (PlayerBullet(self.rect.right + 5, self.rect.centery, 'sm'),
+                                PlayerBullet(self.rect.left - 5, self.rect.centery, 'sm'),
+                                PlayerBullet(self.rect.right - 10, self.rect.top, 'lg'),
+                                PlayerBullet(self.rect.left + 10, self.rect.top, 'lg'))
+            for bullet in bullet_group:
                 self.all_sprites.add(bullet)
                 self.bullets.add(bullet)
-                self.music_manager.shoot_sound.play()
-            if self.power == 2:
-                bullet1 = PlayerBullet(self.rect.left, self.rect.centery, 'lg')
-                bullet2 = PlayerBullet(self.rect.right, self.rect.centery, 'lg')
-                self.all_sprites.add(bullet1)
-                self.all_sprites.add(bullet2)
-                self.bullets.add(bullet1)
-                self.bullets.add(bullet2)
-                self.music_manager.shoot_sound.play()
-            if self.power == 3:
-                bullet1 = PlayerBullet(self.rect.centerx, self.rect.top, 'lg')
-                bullet2 = PlayerBullet(self.rect.right, self.rect.centery, 'sm')
-                bullet3 = PlayerBullet(self.rect.left, self.rect.centery, 'sm')
-                self.all_sprites.add(bullet1)
-                self.all_sprites.add(bullet2)
-                self.all_sprites.add(bullet3)
-                self.bullets.add(bullet1)
-                self.bullets.add(bullet2)
-                self.bullets.add(bullet3)
-                self.music_manager.shoot_sound.play()
-            if self.power >= 4:
-                bullet1 = PlayerBullet(self.rect.right + 5, self.rect.centery, 'sm')
-                bullet2 = PlayerBullet(self.rect.left - 5, self.rect.centery, 'sm')
-                bullet3 = PlayerBullet(self.rect.right - 10, self.rect.top, 'lg')
-                bullet4 = PlayerBullet(self.rect.left + 10, self.rect.top, 'lg')
-                self.all_sprites.add(bullet1)
-                self.all_sprites.add(bullet2)
-                self.all_sprites.add(bullet3)
-                self.all_sprites.add(bullet4)
-                self.bullets.add(bullet1)
-                self.bullets.add(bullet2)
-                self.bullets.add(bullet3)
-                self.bullets.add(bullet4)
-                self.music_manager.shoot_sound.play()
+            self.music_manager.shoot_sound.play()
 
     def hide(self):
         self.hidden = True
