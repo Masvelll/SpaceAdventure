@@ -155,6 +155,7 @@ class Settings(Menu):
             mixer_sound.state = self.sound_state
             mixer_music.state = self.music_state
             self.set_sound()
+            self.write_sound()
 
             mixers.update()
             mixers.draw(self.display)
