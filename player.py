@@ -1,9 +1,10 @@
 import pygame
 import os
-from settings import HEIGHT, WIDTH, DATA_DIR, IMG_DIR
+from settings import HEIGHT, WIDTH, IMG_DIR
 from bullet import PlayerBullet
 import sys
 from import_data import money, stats
+from objects import Explosion
 
 config_name = 'myapp.cfg'
 application_path = os.path.dirname(sys.executable)
@@ -127,6 +128,18 @@ class Player(pygame.sprite.Sprite):
                 self.all_sprites.add(bullet)
                 self.bullets.add(bullet)
             self.music_manager.shoot_sound.play()
+
+    def check_death(self):
+        """Проверят мёртв ли игрок и создаёт взрыв"""
+        if self.shield <= 0:
+            death_explosion = Explosion(self.rect.center, 'player')
+            self.all_sprites.add(death_explosion)
+            self.hide()
+            self.lives -= 1
+            self.shield = self.maxshield
+            self.music_manager.fart_sound.play()
+        if self.lives == 0:
+            self.alive = False
 
     def hide(self):
         self.hidden = True

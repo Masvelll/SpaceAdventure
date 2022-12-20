@@ -19,16 +19,7 @@ class CollisionManager:
             expl = Explosion(hit.rect.center, 'sm')
             self.game.all_sprites.add(expl)
             self.spawn_manager.newmob(self.game)
-            if self.player.shield <= 0:
-                self.death_explosion = Explosion(self.player.rect.center, 'player')
-                self.game.all_sprites.add(self.death_explosion)
-                self.player.hide()
-                self.player.lives -= 1
-                self.player.shield = self.player.maxshield
-                self.music_manager.fart_sound.play()
-            if self.player.lives == 0:
-                self.player.alive = False
-                self.player.shield = 0
+            self.player.check_death()
 
     def player_pow(self):
         hits = pygame.sprite.spritecollide(self.player, self.game.powerups, True)
@@ -114,15 +105,7 @@ class CollisionManager:
             expl = Explosion(hit.rect.center, 'sm')
             self.game.all_sprites.add(expl)
             self.spawn_manager.newmob(self.game)
-            if self.player.shield <= 0:
-                self.death_explosion = Explosion(self.player.rect.center, 'player')
-                self.game.all_sprites.add(self.death_explosion)
-                self.player.hide()
-                self.player.lives -= 1
-                self.player.shield = self.player.maxshield
-                self.music_manager.fart_sound.play()
-            if self.player.lives == 0:
-                self.player.alive = False
+            self.player.check_death()
 
     def player_boss_bullet(self):
         hits = pygame.sprite.spritecollide(self.player, self.game.boss_bullets, True)
@@ -130,15 +113,7 @@ class CollisionManager:
             self.player.shield -= 10000
             expl = Explosion(hit.rect.center, 'sm')
             self.game.all_sprites.add(expl)
-            if self.player.shield <= 0:
-                self.death_explosion = Explosion(self.player.rect.center, 'player')
-                self.game.all_sprites.add(self.death_explosion)
-                self.player.hide()
-                self.player.lives -= 1
-                self.player.shield = self.player.maxshield
-                self.music_manager.fart_sound.play()
-            if self.player.lives == 0:
-                self.player.alive = False
+            self.player.check_death()
 
     def bullet_enemy(self):
         hits = pygame.sprite.groupcollide(self.game.enemies, self.game.bullets, False, True)
@@ -166,15 +141,7 @@ class CollisionManager:
             self.player.shield -= 10000
             expl = Explosion(hit.rect.center, 'sm')
             self.game.all_sprites.add(expl)
-            if self.player.shield <= 0:
-                self.death_explosion = Explosion(self.player.rect.center, 'player')
-                self.game.all_sprites.add(self.death_explosion)
-                self.player.hide()
-                self.player.lives -= 1
-                self.player.shield = self.player.maxshield
-                self.music_manager.fart_sound.play()
-            if self.player.lives == 0:
-                self.player.alive = False
+            self.player.check_death()
 
     def process_all_collisions(self):
         self.player_mob()
