@@ -110,7 +110,7 @@ class Player(pygame.sprite.Sprite):
         if now - self.last_shot > self.shoot_delay:
             self.last_shot = now
             if self.power == 1:
-                bullet_group = (PlayerBullet(self.rect.centerx, self.rect.top, 'lg'))
+                bullet_group = [PlayerBullet(self.rect.centerx, self.rect.top, 'lg')]
 
             if self.power == 2:
                 bullet_group = (PlayerBullet(self.rect.left, self.rect.centery, 'lg'),
