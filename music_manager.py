@@ -19,6 +19,7 @@ class MusicManager:
         self.shield_sound = pygame.mixer.Sound(os.path.join(SOUND_DIR, 'pow4.wav'))
         self.power_sound = pygame.mixer.Sound(os.path.join(SOUND_DIR, 'pow5.wav'))
         self.fart_sound = pygame.mixer.Sound(os.path.join(SOUND_DIR, 'fart.wav'))
+        self.laser_sound = pygame.mixer.Sound(os.path.join(SOUND_DIR, 'BossShoot.wav'))
 
         self.all_sounds.add(self.shoot_sound)
         self.all_sounds.add(self.shield_sound)
